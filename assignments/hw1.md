@@ -103,45 +103,46 @@ changes made in the system.
 ```mermaid
 classDiagram
   class Book {
-    +double price
-    +integer num
+    +price : double
+    +num : integer
   }
   class PriceObservation {
-    +Notifiable user
-    +integer low
-    +integer high
+    +user : Notifiable
+    +low : integer
+    +high : integer
   }
   class BookSystem {
-    -Map&lsaquo;string, Book&rsaquo; books
-    -PriceObserver observer
-    +setPrice(string isbn, double price) void
-    +getPrice(string isbn) double
-    +buyBook(string isbn) void
-    +sellBook(string isbn) void
-    +numBooks(string isbn) integer
+    -books : Map&lsaquo;string, Book&rsaquo;
+    -observer : PriceObserver
+    +setPrice(isbn : string, price : double) void
+    +getPrice(isbn : string) double
+    +buyBook(isbn : string) void
+    +sellBook(isbn : string) void
+    +numBooks(isbn : string) integer
   }
   class PriceObserver {
     -observations : Map&lsaquo;string, PriceObservation[*]&rsaquo;
-    +listObservations(string isbn, Notifiable user) PriceObservation[*]
-    +observeOutOfRange(string isbn, Notifiable user, double lowprice, double highprice) void
-    +unobserveOutOfRange(string isbn, Notifiable user)
+    +listObservations(isbn : string, user : Notifiable) PriceObservation[*]
+    +observeOutOfRange(isbn : string, user : Notifiable, lowprice : double, highprice : double) void
+    +unobserveOutOfRange(isbn : string, user : Notifiable) void
   }
-  BookSystem *-- "0..*" Book : contains
-  BookSystem ..> PriceObserver : uses
-  PriceObserver *-- "0..*" PriceObservation : contains
+  BookSystem *-- "0..*" Book
+  BookSystem -- PriceObserver
+  PriceObserver *-- "0..*" PriceObservation
 
   class `<small>&laquo;interface&raquo;</small> Notifiable` {
-    +notifyOutOfRange(string isbn, double price) void
+    +notifyOutOfRange(isbn : string, price : double) void
   }
   class UserA {
-    +notifyOutOfRange(string isbn, double price) void
+    +notifyOutOfRange(isbn : string, price : double) void
   }
   class UserB {
-    +notifyOutOfRange(string isbn, double price) void
+    +notifyOutOfRange(isbn : string, price : double) void
   }
-  PriceObservation ..> `<small>&laquo;interface&raquo;</small> Notifiable` : uses
-  `<small>&laquo;interface&raquo;</small> Notifiable` <|.. UserA : implements
-  `<small>&laquo;interface&raquo;</small> Notifiable` <|.. UserB : implements
+  PriceObservation -- `<small>&laquo;interface&raquo;</small> Notifiable`
+  `<small>&laquo;interface&raquo;</small> Notifiable` <|-- UserA
+  `<small>&laquo;interface&raquo;</small> Notifiable` <|-- UserB
+  `<small>&laquo;interface&raquo;</small> Notifiable` ..> BookSystem
 ```
 
 ### Pseudo-code
@@ -173,7 +174,7 @@ class BookSystem {
     IF price < 0 THEN
       THROW ERROR
     END IF
-    Map<String, PriceObservation[*]> observations -> observer.observations
+    Map<string, PriceObservation[*]> observations -> observer.observations
     PriceObservation[*] os -> observations[isbn]
     FOR PriceObservation o IN os THEN
       IF o.isbn -> isbn THEN
@@ -233,7 +234,7 @@ class BookSystem {
 }
 
 class PriceObserver {
-  Map<String, PriceObservation[*]> observations
+  Map<string, PriceObservation[*]> observations
 
   'List user observations of any book.'
   PriceObservation[*] listObservations(string isbn, Notifiable user) {
@@ -387,8 +388,8 @@ sequenceDiagram
 >     defaultRenderer: "elk"
 > ---
 > flowchart LR
->   Start("Start") --T<sub>1</sub>--> Idle
->   Idle --T<sub>2</sub>--> CheckPin["Check pin"]
+>   Start --T<sub>1</sub>--> Idle
+>   Idle --T<sub>2</sub>--> CheckPin[Check pin]
 >   CheckPin --T<sub>3</sub>--> Idle
 >   CheckPin --T<sub>4</sub>--> Ready
 >   Ready --T<sub>5</sub>--> Idle
@@ -444,729 +445,931 @@ sequenceDiagram
 
 #### Class diagram
 
-In the centralized version, states are defined as an enumeration. Each entry in
-the `State` enumeration represents a node defined in the EFSM of `ATM`. In
-addition to all methods declared in the problem statement, the ATM holds an
-additional state property to keep track of the current ATM phase.
-
 ```mermaid
 classDiagram
   direction LR
-  class ATM {
-    -integer b
-    -string pn
-    -integer attempts
-    -State currentState
+  class AtmLogin {
+    +b : double
+    +pn : string
+    +attempts : integer
+  }
+  class Atm {
+    -currentState : State
+    -states: State[6]
+    -login : AtmLogin
     +create() void
-    +card(integer x, string y) boolean
-    +pin(string x) boolean
-    +deposit(integer d) boolean
-    +withdraw(integer w) boolean
-    +balance() integer
-    +lock(string x) boolean
-    +unlock(string x) boolean
-    +exit() boolean
+    +card(x : double, y : string) void
+    +pin(x : string) void
+    +deposit(d : double) void
+    +withdraw(w : double) void
+    +balance() void
+    +lock(x : string) void
+    +unlock(string x) void
+    +exit() void
+    +changeState(id : integer) void
   }
-  class `<small>&laquo;interface&raquo;</small> State` {
-    +card(ATM atm, integer x, string y) boolean
-    +pin(ATM atm, string x) boolean
-    +deposit(ATM atm, integer d) boolean
-    +withdraw(ATM atm, integer w) boolean
-    +balance(ATM atm) integer
-    +lock(ATM atm, string x) boolean
-    +unlock(ATM atm, string x) boolean
-    +exit(ATM atm) boolean
+  class `<small>&laquo;abstract&raquo;</small> State` {
+    -atm: Atm
+    +card(x : double, y : string) void
+    +pin(x : string) void
+    +deposit(d : double) void
+    +withdraw(w : double) void
+    +balance() void
+    +lock(x : string) void
+    +unlock(x : string) void
+    +exit() void
   }
-  ATM --> `<small>&laquo;interface&raquo;</small> State` : uses
+  AtmLogin "1" -- `<small>&laquo;abstract&raquo;</small> State` : data
+  Atm -- `<small>&laquo;abstract&raquo;</small> State` : ATM
 
-  class IdleState
-  class CheckPinState
-  class ReadyState
-  class OverdrawnState
-  class LockedState
+  class StartState {
+    +create() void
+  }
+  class IdleState {
+    +card(x : double, y : string) void
+  }
+  class CheckPinState {
+    +pin(x : string) void
+  }
+  class ReadyState {
+    +exit() void
+    +withdraw(w : double) void
+    +deposit(d : double) void
+    +balance() void
+    +lock(x : string) void
+  }
+  class OverdrawnState {
+    +deposit(d : double) void
+    +exit() void
+    +balance() void
+    +lock(x : string) void
+  }
+  class LockedState {
+    +unlock(x : string) void
+  }
 
-  ATM "1" *-- "1"  `<small>&laquo;interface&raquo;</small> State`
-  `<small>&laquo;interface&raquo;</small> State` <|.. IdleState
-  `<small>&laquo;interface&raquo;</small> State` <|.. CheckPinState
-  `<small>&laquo;interface&raquo;</small> State` <|.. ReadyState
-  `<small>&laquo;interface&raquo;</small> State` <|.. OverdrawnState
-  `<small>&laquo;interface&raquo;</small> State` <|.. LockedState
+  Atm *-- `<small>&laquo;abstract&raquo;</small> State` : list states
+  `<small>&laquo;abstract&raquo;</small> State` <|-- StartState
+  `<small>&laquo;abstract&raquo;</small> State` <|-- IdleState
+  `<small>&laquo;abstract&raquo;</small> State` <|-- CheckPinState
+  `<small>&laquo;abstract&raquo;</small> State` <|-- ReadyState
+  `<small>&laquo;abstract&raquo;</small> State` <|-- OverdrawnState
+  `<small>&laquo;abstract&raquo;</small> State` <|-- LockedState
 ```
 
 #### Pseudo-code
 
-Methods in the State interface have a default return value, so that the
-implementing class can choose which methods to override. The methods related to
-ATM operations are delegated to the state classes. For example, because users
-may only insert a card when the ATM machine is idle, executing functions other
-than `card()` will yield false.
-
 ```vb
-class ATM {
+class AtmLogin {
+  double b
+  string pn
+  integer attempts
+}
+
+class Atm {
   State currentState
+  State[6] states
+
+  Atm() {
+    states[0] -> new StartState()
+    states[1] -> new IdleState()
+    states[2] -> new CheckPinState()
+    states[3] -> new ReadyState()
+    states[4] -> new OverdrawnState()
+    states[5] -> new LockedState()
+    currentState -> states[0]
+  }
 
   void create() {
-    'T1'
-    currentState -> IdleState
+    currentState.create()
   }
 
-  boolean card(integer x, string y) {
-    RETURN currentState.card(this, x, y)
+  void card(double x, string y) {
+    currentState.card(x, y)
   }
 
-  boolean pin(string x) {
-    RETURN currentState.pin(this, x)
+  void pin(string x) {
+    currentState.pin(x)
   }
 
-  boolean deposit(integer d) {
-    RETURN currentState.deposit(this, d)
+  void deposit(double d) {
+    currentState.deposit(d)
   }
 
-  boolean withdraw(integer w) {
-    RETURN currentState.withdraw(this, w)
+  void withdraw(double w) {
+    currentState.withdraw(w)
   }
 
-  integer balance() {
-    RETURN currentState.balance(this)
+  void balance() {
+    currentState.balance()
   }
 
-  boolean lock(string x) {
-    RETURN currentState.lock(this, x)
+  void lock(string x) {
+    currentState.lock(x)
   }
 
-  boolean unlock(string x) {
-    RETURN currentState.unlock(this, x)
+  void unlock(string x) {
+    currentState.unlock(x)
   }
 
-  boolean exit() {
-    RETURN currentState.exit(this)
+  void exit() {
+    currentState.exit()
+  }
+
+  void changeState(integer id) {
+    currentState -> states[id]
   }
 }
 
-interface State {
-  boolean card(ATM atm, integer x, string y) {
-    RETURN false
-  }
+abstract class State {
+  Atm atm
+  AtmLogin login
 
-  boolean pin(ATM atm, string x) {
-    RETURN false
-  }
+  abstract void card(double x, string y)
 
-  boolean deposit(ATM atm, integer d) {
-    RETURN false
-  }
+  abstract void pin(string x)
 
-  boolean withdraw(ATM atm, integer w) {
-    RETURN false
-  }
+  abstract void deposit(double d)
 
-  integer balance(ATM atm) {
-    RETURN -1
-  }
+  abstract void withdraw(double w)
 
-  boolean lock(ATM atm, string x) {
-    RETURN false
-  }
+  abstract void balance()
 
-  boolean unlock(ATM atm, string x) {
-    RETURN false
-  }
+  abstract void lock(string x)
 
-  boolean exit(ATM atm) {
-    RETURN false
+  abstract void unlock(string x)
+
+  abstract void exit()
+}
+
+class StartState implements State {
+  integer id -> 0
+
+  void create() {
+    'T1'
   }
 }
 
 class IdleState implements State {
-  boolean card(ATM atm, integer x, string y) {
+  integer id -> 1
+
+  void card(double x, string y) {
     'T2'
-    b -> x
-    pn -> y
-    attempts -> 0
-    atm.currentState -> CheckPinState()
-    RETURN TRUE
+    login.b -> x
+    login.pn -> y
+    login.attempts -> 0
   }
 }
 
 class CheckPinState implements State {
-  boolean pin(ATM atm, string x) {
+  integer id -> 2
+
+  void pin(string x) {
     'T3'
-    IF NOT x -> pn AND attempts == 3 THEN
+    IF NOT x -> pn AND attempts -> 3 THEN
       'eject card'
-      atm.currentState -> IdleState()
-      RETURN TRUE
     'T4'
     ELSE IF x -> pn AND b >= 1000 THEN
       'display menu'
-      atm.currentState -> ReadyState()
-      RETURN TRUE
     'T6'
     ELSE NOT x -> pn AND attempts < 3 THEN
       attempts -> attempts + 1
-      atm.currentState -> CheckPinState()
-      RETURN TRUE
     'T19'
     ELSE IF x -> pn AND b < 1000 THEN
       'display menu'
-      atm.currentState -> OverdrawnState()
-      RETURN TRUE
     END IF
-    RETURN FALSE
   }
 }
 
 class ReadyState implements State {
-  boolean deposit(ATM atm, integer d) {
+  integer id -> 3
+
+  void deposit(double d) {
     'T8'
-    b -> b + d
-    atm.currentState -> ReadyState()
-    RETURN TRUE
+    login.b -> login.b + d
   }
 
-  boolean withdraw(ATM atm, integer w) {
+  void withdraw(double w) {
     'T7'
-    IF b - w >= 1000 THEN
-      b -> b - w
-      atm.currentState -> ReadyState()
-      RETURN TRUE
+    IF login.b - w >= 1000 THEN
+      login.b -> login.b - w
     'T15'
-    ELSE IF b - w > 0 AND b - w < 1000 THEN
-      b -> b - w - 10
-      atm.currentState -> OverdrawnState()
-      RETURN TRUE
+    ELSE IF login.b - w > 0 AND login.b - w < 1000 THEN
+      login.b -> login.b - w - 10
     END IF
-    RETURN FALSE
   }
 
-  integer balance(ATM atm) {
+  void balance() {
     'T9'
-    RETURN b
+    'Display balance b'
   }
 
-  boolean lock(ATM atm, string x) {
+  void lock(string x) {
     'T10'
     IF NOT x -> pn THEN
-      RETURN FALSE
+      RETURN
     END IF
-    atm.currentState -> LockedState()
-    RETURN TRUE
   }
 
-  boolean exit(ATM atm) {
+  void exit() {
     'T5'
     'eject card'
-    atm.currentState -> IdleState()
-    RETURN TRUE
   }
 }
 
 class OverdrawnState implements State {
-  boolean deposit(ATM atm, integer d) {
+  integer id -> 4
+
+  void deposit(double d) {
     'T14'
-    IF b + d >= 1000 THEN
-      b -> b + d
-      atm.currentState -> ReadyState()
+    IF login.b + d >= 1000 THEN
+      login.b -> login.b + d
     'T17'
     ELSE
-      b -> b + d - 10
-      atm.currentState -> OverdrawnState()
+      login.b -> login.b + d - 10
     END IF
-    RETURN TRUE
   }
 
-  integer balance(ATM atm) {
+  void balance() {
     'T16'
-    RETURN b
+    'Display balance b'
   }
 
-  boolean lock(ATM atm, string x) {
+  void lock(string x) {
     'T12'
     IF NOT x -> pn THEN
-      RETURN FALSE
+      RETURN
     END IF
-    atm.currentState -> State.LOCKED
-    RETURN TRUE
+    atm.changeState(5)
   }
 
-  boolean exit(ATM atm) {
+  void exit() {
     'T18'
     'eject card'
-    atm.currentState -> IdleState()
-    RETURN TRUE
+    atm.changeState(1)
   }
 }
 
 class LockedState implements State {
-  boolean unlock(ATM atm, string x) {
+  integer id -> 5
+
+  void unlock(string x) {
     IF NOT x -> pn THEN
-      RETURN FALSE
+      RETURN
     END IF
     'T11'
-    IF b >= 1000 THEN
-      atm.currentState -> ReadyState()
+    IF login.b >= 1000 THEN
     'T13'
     ELSE
-      atm.currentState -> OverdrawnState()
     END IF
-    RETURN TRUE
   }
 }
 ```
 
 #### Sequence diagram
 
-A client starts by instantiating the ATM class. At the end of every operation, a
-new state is assigned to the ATM. The current state of the ATM determines the
-next possible action a client may take.
-
 ```mermaid
 sequenceDiagram
   actor Client
-  participant ATM
+  participant Atm
+  participant AtmLogin
+  participant StartState
   participant IdleState
   participant CheckPinState
   participant ReadyState
   participant OverdrawnState
   participant LockedState
 
-  Client ->> ATM: create()
-  activate ATM
-  ATM ->> ATM: T1: set state to 'Idle'
-  deactivate ATM
+  Client ->> Atm: create()
+  activate Atm
+  Atm ->> StartState: T1: create
+  activate StartState
+  StartState -->> Atm:
+  Atm ->> StartState: getStateId()
+  StartState -->> Atm: 0
+  deactivate StartState
+  Atm -->> Client:
+  deactivate Atm
 
-  Client ->> ATM: card(b, pn)
-  activate ATM
-  ATM ->> IdleState: T2: insert card
+  Client ->> Atm: card(b, pn)
+  activate Atm
+  Atm ->> IdleState: T2: insert card
   activate IdleState
-  IdleState -->> ATM: set state to 'Check pin'
+  IdleState ->> AtmLogin : get data
+  activate AtmLogin
+  AtmLogin -->> IdleState: data
+  IdleState -->> Atm:
+  deactivate AtmLogin
+  Atm ->> IdleState: getStateId()
+  IdleState -->> Atm: 1
   deactivate IdleState
-  deactivate ATM
+  Atm -->> Client:
+  deactivate Atm
 
-  Client ->> ATM: pin(x)
-  activate ATM
-  ATM ->> CheckPinState: validate pin
+  Client ->> Atm: pin(x)
+  activate Atm
+  Atm ->> CheckPinState: validate pin
   activate CheckPinState
+  CheckPinState ->> AtmLogin : get data
+  activate AtmLogin
+  AtmLogin -->> CheckPinState: data
+  deactivate AtmLogin
   alt T3: x != pn and attempts == 3
-    CheckPinState ->> ATM: eject card
-    CheckPinState -->> ATM: set state to 'Idle'
+    CheckPinState ->> CheckPinState: eject card
+    CheckPinState -->> Atm:
+    Atm ->> CheckPinState: getStateId()
+    CheckPinState -->> Atm: 1
   else T4: x == pn and b >= 1000
-    CheckPinState ->> ATM: display menu
-    CheckPinState -->> ATM: set state to 'Ready'
+    CheckPinState ->> CheckPinState: display menu
+    CheckPinState -->> Atm:
+    Atm ->> CheckPinState: getStateId()
+    CheckPinState -->> Atm: 3
   else T6: x != pn and attempts < 3
     CheckPinState ->> CheckPinState: attempts++
-    CheckPinState -->> ATM: stay in 'CheckPpin'
+    CheckPinState -->> Atm: stay in 'CheckPin'
   else T19: x == pn and b < 1000
-    CheckPinState ->> ATM: display menu
-    CheckPinState -->> ATM: set state to 'Overdrawn'
+    CheckPinState ->> CheckPinState: display menu
+    CheckPinState -->> Atm:
+    Atm ->> CheckPinState: getStateId()
+    CheckPinState -->> Atm: 4
   end
   deactivate CheckPinState
-  deactivate ATM
+  Atm -->> Client:
+  deactivate Atm
 
-  Client ->> ATM: exit()
-  activate ATM
-  ATM ->> ReadyState: T5: eject card
+  Client ->> Atm: exit()
+  activate Atm
+  Atm ->> ReadyState: T5: eject card
   activate ReadyState
-  ReadyState -->> ATM: set state to 'Idle'
+  ReadyState -->> Atm: set state to 'Idle'
   deactivate ReadyState
-  ATM ->> OverdrawnState: T18: eject card
+  Atm ->> OverdrawnState: T18: eject card
   activate OverdrawnState
-  OverdrawnState -->> ATM: set state to 'Idle'
+  OverdrawnState -->> Atm:
+  Atm ->> OverdrawnState: getStateId()
+  OverdrawnState -->> Atm: 1
   deactivate OverdrawnState
-  deactivate ATM
+  Atm -->> Client:
+  deactivate Atm
 
-  Client ->> ATM: withdraw(w)
-  activate ATM
-  ATM ->> ReadyState: validate amount
+  Client ->> Atm: withdraw(w)
+  activate Atm
+  Atm ->> ReadyState: validate amount
   activate ReadyState
+  ReadyState ->> AtmLogin : get data
+  activate AtmLogin
+  AtmLogin -->> ReadyState: data
+  deactivate AtmLogin
   alt T7: b - w >= 1000
-    ReadyState ->> ATM: b = b - w
-    ReadyState -->> ATM: stay in 'Ready'
+    ReadyState ->> Atm: b = b - w
+    ReadyState -->> Atm: stay in 'Ready'
   else T15: 0 < b - w < 1000
-    ReadyState ->> ATM: b = b - w - 10
-    ReadyState -->> ATM: set state to 'Overdrawn'
+    ReadyState ->> Atm: b = b - w - 10
+    Atm ->> ReadyState: getStateId()
+    ReadyState -->> Atm: 4
   end
   deactivate ReadyState
-  deactivate ATM
+  Atm -->> Client:
+  deactivate Atm
 
-  Client ->> ATM: deposit(d)
-  activate ATM
-  ATM ->> ReadyState: T8: handle deposit
+  Client ->> Atm: deposit(d)
+  activate Atm
+  Atm ->> ReadyState: T8: handle deposit
   activate ReadyState
-  ReadyState -->> ATM: b = b + d
+  ReadyState ->> AtmLogin : get data
+  activate AtmLogin
+  AtmLogin -->> ReadyState: data
+  deactivate AtmLogin
+  ReadyState ->> ReadyState: b = b + d
+  ReadyState -->> Atm: stay in 'Ready'
   deactivate ReadyState
-  ATM ->> OverdrawnState: validate amount
-  activate OverdrawnState
-  alt T14: b + d >= 1000
-    OverdrawnState ->> ATM: b = b + d
-    OverdrawnState -->> ATM: set state to 'Ready'
-  else T17: b + d < 1000
-    OverdrawnState ->> ATM: b = b + d - 10
-    OverdrawnState -->> ATM: stay in 'Overdrawn'
-  end
-  deactivate OverdrawnState
-  deactivate ATM
+  Atm -->> Client:
+  deactivate Atm
 
-  Client ->> ATM: balance()
-  activate ATM
-  ATM ->> ReadyState: T9: request balance
+  Client ->> Atm: balance()
+  activate Atm
+  Atm ->> ReadyState: T9: request balance
   activate ReadyState
-  ReadyState -->> ATM: display balance b
+  ReadyState -->> Atm: display balance b
   deactivate ReadyState
-  ATM ->> OverdrawnState: T16: request balance
+  Atm ->> OverdrawnState: T16: request balance
   activate OverdrawnState
-  OverdrawnState -->> ATM: display balance b
+  OverdrawnState -->> Atm: display balance b
   deactivate OverdrawnState
-  deactivate ATM
+  Atm -->> Client:
+  deactivate Atm
 
-  Client ->> ATM: lock(pin)
-  activate ATM
-  ATM ->> ReadyState: T10: validate pin
+  Client ->> Atm: lock(pin)
+  activate Atm
+  Atm ->> ReadyState: T10: validate pin
   activate ReadyState
-  ReadyState -->> ATM: set state to 'Locked'
+  ReadyState -->> Atm: set state to 'Locked'
   deactivate ReadyState
-  ATM ->> OverdrawnState: T12: validate pin
+  Atm ->> OverdrawnState: T12: validate pin
   activate OverdrawnState
-  OverdrawnState -->> ATM: set state to 'Locked'
+  OverdrawnState -->> Atm:
+  Atm ->> OverdrawnState: getStateId()
+  OverdrawnState -->> Atm: 5
   deactivate OverdrawnState
-  deactivate ATM
+  Atm -->> Client:
+  deactivate Atm
 
-  Client ->> ATM: unlock(pin)
-  activate ATM
-  ATM ->> LockedState: validate pin
+  Client ->> Atm: unlock(pin)
+  activate Atm
+  Atm ->> LockedState: validate pin
   activate LockedState
+  LockedState -->> Atm:
   alt T11: pin == pn and b >= 1000
-    LockedState -->> ATM: set state to 'Ready'
+    Atm ->> LockedState: getStateId()
+    LockedState -->> Atm: 3
   else T13: pin == pn and b < 1000
-    LockedState -->> ATM: set state to 'Overdrawn'
+    LockedState ->> Atm: getStateId()
+    LockedState -->> Atm: 4
   end
   deactivate LockedState
-  deactivate ATM
+  Atm -->> Client:
+  deactivate Atm
 ```
 
 ### Centralized version
 
 #### Class diagram
 
-Each entry in the `State` enumeration represents a node defined in the EFSM of
-ATM. In addition to all methods declared in the problem statement, the `ATM`
-holds an additional state property to keep track of the current ATM phase.
-
 ```mermaid
 classDiagram
   direction LR
-  class ATM {
-    -integer b
-    -string pn
-    -integer attempts
-    -State currentState
+  class AtmLogin {
+    +b : double
+    +pn : string
+    +attempts : integer
+  }
+  class Atm {
+    -currentState : State
+    -states: State[6]
+    -login : AtmLogin
     +create() void
-    +card(integer x, string y) boolean
-    +pin(string x) boolean
-    +deposit(integer d) boolean
-    +withdraw(integer w) boolean
-    +balance() integer
-    +lock(string x) boolean
-    +unlock(string x) boolean
-    +exit() boolean
+    +card(x : double, y : string) void
+    +pin(x : string) void
+    +deposit(d : double) void
+    +withdraw(w : double) void
+    +balance() void
+    +lock(x : string) void
+    +unlock(x : string) void
+    +exit() void
   }
-  class `<small>&laquo;enumeration&raquo;</small> State` {
-    IDLE
-    CHECK_PIN
-    READY
-    OVERDRAWN
-    LOCKED
+  class `<small>&laquo;abstract&raquo;</small> State` {
+    -login : AtmLogin
+    +card(x : double, y : string) void
+    +pin(x : string) void
+    +deposit(d : double) void
+    +withdraw(w : double) void
+    +balance() void
+    +lock(x : string) void
+    +unlock(x : string) void
+    +exit() void
+    +getStateId() integer
   }
-  ATM "1" *-- "1" `<small>&laquo;enumeration&raquo;</small> State`
+  AtmLogin "1" -- `<small>&laquo;abstract&raquo;</small> State` : data
+  AtmLogin "1" -- Atm : data
+
+  class StartState {
+    -id : integer = 0
+    +create() void
+  }
+  class IdleState {
+    -id : integer = 1
+    +card(x : double, y : string) void
+  }
+  class CheckPinState {
+    -id : integer = 2
+    +pin(x : string) void
+  }
+  class ReadyState {
+    -id : integer = 3
+    +exit() void
+    +withdraw(w : double) void
+    +deposit(d : double) void
+    +balance() double
+    +lock(x : string) void
+  }
+  class OverdrawnState {
+    -id : integer = 4
+    +deposit(d : double) void
+    +exit() void
+    +balance() double
+    +lock(x : string) void
+  }
+  class LockedState {
+    -id : integer = 5
+    +unlock(x : string) void
+  }
+
+  Atm *-- `<small>&laquo;abstract&raquo;</small> State` : list states
+  `<small>&laquo;abstract&raquo;</small> State` <|-- StartState
+  `<small>&laquo;abstract&raquo;</small> State` <|-- IdleState
+  `<small>&laquo;abstract&raquo;</small> State` <|-- CheckPinState
+  `<small>&laquo;abstract&raquo;</small> State` <|-- ReadyState
+  `<small>&laquo;abstract&raquo;</small> State` <|-- OverdrawnState
+  `<small>&laquo;abstract&raquo;</small> State` <|-- LockedState
 ```
 
 #### Pseudo-code
 
-Most functions (all except `create()` and `balance()`) return a Boolean value
-indicating whether the intended operation was executed successfully. For
-example, `card(x, y)` will always yield false when the ATM is not idle. Instead
-of an overridden implementation as seen in the decentralized version, the
-centralized version relies on conditional checks to determine which logic
-applies given the current state.
-
 ```vb
-enum State {
-  IDLE
-  CHECK_PIN
-  READY
-  OVERDRAWN
-  LOCKED
-}
-
-class ATM {
-  integer b
+class AtmLogin {
+  double b
   string pn
   integer attempts
+}
+
+class Atm {
   State currentState
+  State[6] states
+  AtmLogin login
+
+  Atm() {
+    states[0] -> new StartState()
+    states[1] -> new IdleState()
+    states[2] -> new CheckPinState()
+    states[3] -> new ReadyState()
+    states[4] -> new OverdrawnState()
+    states[5] -> new LockedState()
+    currentState -> states[0]
+  }
+
+  void create() {
+    currentState.create()
+    IF currentState.getStateId() -> 0 THEN
+      currentState -> states[1]
+    END IF
+  }
+
+  void card(double x, string y) {
+    currentState.card(x, y)
+    IF currentState.getStateId() -> 1 THEN
+      currentState -> states[2]
+    END IF
+  }
+
+  void pin(string x) {
+    integer attempts -> login.attempts
+    currentState.pin(x)
+    IF currentState.getStateId() -> 2 THEN
+      IF NOT x -> login.pn AND attempts -> 3 THEN
+        currentState -> states[1]
+      ELSE IF x -> login.pn AND login.b >= 1000 THEN
+        currentState -> states[3]
+      ELSE IF x -> login.pn AND login.b < 1000 THEN
+        currentState -> states[4]
+      END IF
+    END IF
+  }
+
+  void deposit(double d) {
+    double temp = login.b
+    currentState.deposit(d)
+    IF currentState.getStateId() -> 4 THEN
+      IF temp + d >= 1000 THEN
+        currentState -> states[3]
+      END IF
+    END IF
+  }
+
+  void withdraw(double w) {
+    double temp = login.b
+    currentState.withdraw(w)
+    IF currentState.getStateId() -> 3 THEN
+      IF temp - w < 1000 AND temp - w > 0
+        currentState -> states[4]
+      ELSE IF temp - w >= 1000 THEN
+        // no change
+      END IF
+    END IF
+  }
+
+  void balance() {
+    currentState.balance()
+  }
+
+  void lock(string x) {
+    currentState.lock(x)
+    IF currentState.getStateId() -> 3 OR currentState.getStateId() -> 4 THEN
+      IF x -> login.pn THEN
+        currentState -> states[5]
+      END IF
+    END IF
+  }
+
+  void unlock(string x) {
+    currentState.unlock(x)
+    IF currentState.getStateId() -> 5 THEN
+      IF x -> login.pn AND login.b >= 1000 THEN
+        currentState -> states[3]
+      ELSE IF x -> login.pn AND login.b < 1000 THEN
+        currentState -> states[4]
+      END IF
+    END IF
+  }
+
+  void exit() {
+    currentState.exit()
+    IF currentState.getStateId() -> 3 OR currentState.getStateId() -> 4 THEN
+      currentState -> states[1]
+    END IF
+  }
+}
+
+abstract class State {
+  AtmLogin login
+  integer id
+
+  abstract void card(double x, string y)
+
+  abstract void pin(string x)
+
+  abstract void deposit(double d)
+
+  abstract void withdraw(double w)
+
+  abstract void balance()
+
+  abstract void lock(string x)
+
+  abstract void unlock(string x)
+
+  abstract void exit()
+
+  integer getStateId() {
+    RETURN id
+  }
+}
+
+class StartState implements State {
+  integer id = 0
 
   void create() {
     'T1'
-    currentState -> State.IDLE
   }
+}
 
-  boolean card(integer x, string y) {
-    IF NOT currentState -> State.IDLE THEN
-      RETURN FALSE
-    END IF
+class IdleState implements State {
+  integer id = 1
+
+  void card(double x, string y) {
     'T2'
-    b -> x
-    pn -> y
-    attempts -> 0
-    currentState -> State.CHECK_PIN
-    RETURN TRUE
+    login.b -> x
+    login.pn -> y
+    login.attempts -> 0
   }
+}
 
-  boolean pin(string x) {
-    IF NOT currentState -> State.CHECK_PIN THEN
-      RETURN FALSE
-    END IF
+class CheckPinState implements State {
+  integer id = 2
+
+  void pin(string x) {
     'T3'
-    IF NOT x -> pn AND attempts == 3 THEN
+    IF NOT x -> pn AND attempts -> 3 THEN
       'eject card'
-      currentState -> State.IDLE
-      RETURN TRUE
     'T4'
     ELSE IF x -> pn AND b >= 1000 THEN
       'display menu'
-      currentState -> State.READY
-      RETURN TRUE
     'T6'
     ELSE NOT x -> pn AND attempts < 3 THEN
       attempts -> attempts + 1
-      currentState -> State.CHECK_PIN
-      RETURN TRUE
     'T19'
     ELSE IF x -> pn AND b < 1000 THEN
       'display menu'
-      currentState -> State.OVERDRAWN
-      RETURN TRUE
     END IF
-    RETURN FALSE
+  }
+}
+
+class ReadyState implements State {
+  integer id = 3
+
+  void deposit(double d) {
+    'T8'
+    login.b -> login.b + d
   }
 
-  boolean deposit(integer d) {
-    'T8'
-    IF currentState -> State.READY THEN
-      b -> b + d
-      currentState -> State.READY
-      RETURN TRUE
+  void withdraw(double w) {
+    'T7'
+    IF login.b - w >= 1000 THEN
+      login.b -> login.b - w
+    'T15'
+    ELSE IF login.b - w > 0 AND login.b - w < 1000 THEN
+      login.b -> login.b - w - 10
     END IF
-    IF NOT currentState -> State.OVERDRAWN THEN
-      RETURN FALSE
+  }
+
+  void balance() {
+    'T9'
+    'Display balance b'
+  }
+
+  void lock(string x) {
+    'T10'
+    IF NOT x -> pn THEN
+      RETURN
     END IF
+  }
+
+  void exit() {
+    'T5'
+    'eject card'
+  }
+}
+
+class OverdrawnState implements State {
+  integer id = 4
+
+  void deposit(double d) {
     'T14'
-    IF b + d >= 1000 THEN
-      b -> b + d
-      currentState -> State.READY
+    IF login.b + d >= 1000 THEN
+      login.b -> login.b + d
     'T17'
     ELSE
-      b -> b + d - 10
-      currentState -> State.OVERDRAWN
+      login.b -> login.b + d - 10
     END IF
     RETURN TRUE
   }
 
-  boolean withdraw(integer w) {
-    IF NOT currentState -> State.READY THEN
-      RETURN FALSE
-    END IF
-    'T7'
-    IF b - w >= 1000 THEN
-      b -> b - w
-      currentState -> State.READY
-      RETURN TRUE
-    'T15'
-    ELSE IF b - w > 0 AND b - w < 1000 THEN
-      b -> b - w - 10
-      currentState -> State.OVERDRAWN
-      RETURN TRUE
-    END IF
-    RETURN FALSE
+  void balance() {
+    'T16'
+    'Display balance b'
   }
 
-  integer balance() {
-    IF NOT currentState -> State.READY AND
-      NOT currentState -> State.OVERDRAWN THEN
-      RETURN -1
-    END IF
-    'T9,T16'
-    RETURN b
-  }
-
-  boolean lock(string x) {
-    IF NOT currentState -> State.READY AND
-      NOT currentState -> State.OVERDRAWN THEN
-      RETURN FALSE
-    END IF
-    'T10,T12'
+  void lock(string x) {
+    'T12'
     IF NOT x -> pn THEN
-      RETURN FALSE
+      RETURN
     END IF
-    currentState -> State.LOCKED
-    RETURN TRUE
   }
 
-  boolean unlock(string x) {
-    IF NOT currentState -> State.LOCKED OR NOT x -> pn THEN
-      RETURN FALSE
+  void exit() {
+    'T18'
+    'eject card'
+  }
+}
+
+class LockedState implements State {
+  integer id = 5
+
+  void unlock(string x) {
+    IF NOT x -> pn THEN
+      RETURN
     END IF
     'T11'
-    IF b >= 1000 THEN
-      currentState -> State.READY
+    IF login.b >= 1000 THEN
     'T13'
     ELSE
-      currentState -> State.OVERDRAWN
     END IF
-    RETURN TRUE
-  }
-
-  boolean exit() {
-    IF NOT currentState -> State.READY AND
-      NOT currentState -> State.OVERDRAWN THEN
-      RETURN FALSE
-    END IF
-    'T5,T18'
-    'eject card'
-    currentState -> State.IDLE
-    RETURN TRUE
   }
 }
 ```
 
 #### Sequence diagram
 
-The ATM keeps track of the current phase by storing a state property in
-enumeration form. As opposed to a custom implementation in each separate class,
-the main class relies on conditional state checks in its method statements.
-Other than that, the operations and their notation are comparable to the
-decentralized state pattern.
-
 ```mermaid
 sequenceDiagram
   actor Client
-  participant ATM
-  participant State
+  participant Atm
+  participant AtmLogin
+  participant StartState
+  participant IdleState
+  participant CheckPinState
+  participant ReadyState
+  participant OverdrawnState
+  participant LockedState
 
-  Client ->> ATM: create()
-  activate ATM
-  ATM ->> State: T1: create ATM
-  activate State
-  State -->> ATM: set state to 'Idle'
-  deactivate State
-  deactivate ATM
+  Client ->> Atm: create()
+  activate Atm
+  Atm ->> StartState: T1: create
+  activate StartState
+  StartState ->> Atm: changeState(1)
+  deactivate StartState
+  Atm -->> Client:
+  deactivate Atm
 
-  Client ->> ATM: card(b, pn)
-  activate ATM
-  ATM ->> State: T2: insert card
-  activate State
-  State -->> ATM: set state to 'CheckPin'
-  deactivate State
-  deactivate ATM
+  Client ->> Atm: card(b, pn)
+  activate Atm
+  Atm ->> IdleState: T2: insert card
+  activate IdleState
+  IdleState ->> AtmLogin : get data
+  activate AtmLogin
+  AtmLogin -->> IdleState: data
+  deactivate AtmLogin
+  IdleState ->> Atm: changeState(2)
+  deactivate IdleState
+  Atm -->> Client:
+  deactivate Atm
 
-  Client ->> ATM: pin(x)
-  activate ATM
-  ATM ->> State: validate pin
-  activate State
+  Client ->> Atm: pin(x)
+  activate Atm
+  Atm ->> CheckPinState: validate pin
+  activate CheckPinState
+  CheckPinState ->> AtmLogin : get data
+  activate AtmLogin
+  AtmLogin -->> CheckPinState: data
+  deactivate AtmLogin
   alt T3: x != pn and attempts == 3
-    State ->> ATM: eject card
-    State -->> ATM: set state to 'Idle'
+    CheckPinState ->> CheckPinState: eject card
+    CheckPinState ->> Atm: changeState(1)
   else T4: x == pn and b >= 1000
-    State ->> ATM: display menu
-    State -->> ATM: set state to 'Ready'
+    CheckPinState ->> CheckPinState: display menu
+    CheckPinState ->> Atm: changeState(3)
   else T6: x != pn and attempts < 3
-    State ->> State: attempts++
-    State -->> ATM: set state to 'CheckPin'
+    CheckPinState ->> CheckPinState: attempts++
+    CheckPinState -->> Atm: stay in 'CheckPin'
   else T19: x == pn and b < 1000
-    State ->> ATM: display menu
-    State -->> ATM: set state to 'Overdrawn'
+    CheckPinState ->> CheckPinState: display menu
+    CheckPinState ->> Atm: changeState(4)
   end
-  deactivate State
-  deactivate ATM
+  deactivate CheckPinState
+  Atm -->> Client:
+  deactivate Atm
 
-  Client ->> ATM: exit()
-  activate ATM
-  ATM ->> State: prepare exit
-  activate State
-  alt T5: from 'Ready'
-    State ->> ATM: eject card
-    State -->> ATM: set state to 'Idle'
-  else T18: from 'Overdrawn'
-    State ->> ATM: eject card
-    State -->> ATM: set state to 'Idle'
-  end
-  deactivate State
-  deactivate ATM
+  Client ->> Atm: exit()
+  activate Atm
+  Atm ->> ReadyState: T5: eject card
+  activate ReadyState
+  ReadyState -->> Atm: set state to 'Idle'
+  deactivate ReadyState
+  Atm ->> OverdrawnState: T18: eject card
+  activate OverdrawnState
+  OverdrawnState ->> Atm: changeState(1)
+  deactivate OverdrawnState
+  Atm -->> Client:
+  deactivate Atm
 
-  Client ->> ATM: withdraw(w)
-  activate ATM
-  ATM ->> State: validate amount
-  activate State
+  Client ->> Atm: withdraw(w)
+  activate Atm
+  Atm ->> ReadyState: validate amount
+  activate ReadyState
+  ReadyState ->> AtmLogin : get data
+  activate AtmLogin
+  AtmLogin -->> ReadyState: data
+  deactivate AtmLogin
   alt T7: b - w >= 1000
-    State ->> ATM: b = b - w
-    State -->> ATM: set state to 'Ready'
+    ReadyState ->> Atm: b = b - w
+    ReadyState -->> Atm: stay in 'Ready'
   else T15: 0 < b - w < 1000
-    State ->> ATM: b = b - w - 10
-    State -->> ATM: set state to 'Overdrawn'
+    ReadyState ->> Atm: b = b - w - 10
+    ReadyState ->> Atm: changeState(4)
   end
-  deactivate State
-  deactivate ATM
+  deactivate ReadyState
+  Atm -->> Client:
+  deactivate Atm
 
-  Client ->> ATM: deposit(d)
-  activate ATM
-  ATM ->> State: validate amount
-  activate State
-  alt T8: from Ready
-    State ->> ATM: b = b + d
-    State -->> ATM: set state to 'Ready'
-  else T14: from 'Overdrawn', b + d >= 1000
-    State ->> ATM: b = b + d
-    State -->> ATM: set state to 'Ready'
-  else T17: from 'Overdrawn', b + d < 1000
-    State ->> ATM: b = b + d - 10
-    State -->> ATM: set state to 'Overdrawn'
-  end
-  deactivate State
-  deactivate ATM
+  Client ->> Atm: deposit(d)
+  activate Atm
+  Atm ->> ReadyState: T8: handle deposit
+  activate ReadyState
+  ReadyState ->> AtmLogin : get data
+  activate AtmLogin
+  AtmLogin -->> ReadyState: data
+  deactivate AtmLogin
+  ReadyState ->> ReadyState: b = b + d
+  ReadyState -->> Atm: stay in 'Ready'
+  deactivate ReadyState
+  Atm -->> Client:
+  deactivate Atm
 
-  Client ->> ATM: balance()
-  activate ATM
-  ATM ->> State: request balance
-  activate State
-  alt T9: from 'Ready'
-    State ->> ATM: display balance b
-    State -->> ATM: set state to 'Ready'
-  else T16: from 'Overdrawn'
-    State ->> ATM: display balance b
-    State -->> ATM: set state to 'Overdrawn'
-  end
-  deactivate State
-  deactivate ATM
+  Client ->> Atm: balance()
+  activate Atm
+  Atm ->> ReadyState: T9: request balance
+  activate ReadyState
+  ReadyState -->> Atm: display balance b
+  deactivate ReadyState
+  Atm ->> OverdrawnState: T16: request balance
+  activate OverdrawnState
+  OverdrawnState -->> Atm: display balance b
+  deactivate OverdrawnState
+  Atm -->> Client:
+  deactivate Atm
 
-  Client ->> ATM: lock(pin)
-  activate ATM
-  ATM ->> State: validate pin
-  activate State
-  alt T10: from 'Ready', pin == pn
-    State -->> ATM: set state to 'Locked'
-  else T12: from 'Overdrawn', pin == pn
-    State -->> ATM: set state to 'Locked'
-  end
-  deactivate State
-  deactivate ATM
+  Client ->> Atm: lock(pin)
+  activate Atm
+  Atm ->> ReadyState: T10: validate pin
+  activate ReadyState
+  ReadyState ->> Atm: changeState(5)
+  deactivate ReadyState
+  Atm ->> OverdrawnState: T12: validate pin
+  activate OverdrawnState
+  OverdrawnState ->> Atm: changeState(5)
+  deactivate OverdrawnState
+  Atm -->> Client:
+  deactivate Atm
 
-  Client ->> ATM: unlock(pin)
-  activate ATM
-  ATM ->> State: validate pin
-  activate State
+  Client ->> Atm: unlock(pin)
+  activate Atm
+  Atm ->> LockedState: validate pin
+  activate LockedState
   alt T11: pin == pn and b >= 1000
-    State -->> ATM: set state to 'Ready'
+    LockedState ->> Atm: changeState(3)
   else T13: pin == pn and b < 1000
-    State -->> ATM: set state to 'Overdrawn'
+    LockedState ->> Atm: changeState(4)
   end
-  deactivate State
-  deactivate ATM
+  deactivate LockedState
+  Atm -->> Client:
+  deactivate Atm
 ```
