@@ -3,6 +3,10 @@
   type="text/javascript"
   src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 </script>
+<script
+  type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
 
 # [Homework 1](https://github.com/hanggrian/IIT-CS586/blob/assets/assignments/hw1_1.pdf)
 
@@ -174,61 +178,61 @@ class BookSystem {
     IF price < 0 THEN
       THROW ERROR
     END IF
-    Map<string, PriceObservation[*]> observations -> observer.observations
-    PriceObservation[*] os -> observations[isbn]
+    Map<string, PriceObservation[*]> observations <- observer.observations
+    PriceObservation[*] os <- observations[isbn]
     FOR PriceObservation o IN os THEN
-      IF o.isbn -> isbn THEN
+      IF o.isbn == isbn THEN
         CONTINUE
       END IF
       IF o.lowprice <= price AND
         price <= o.highprice THEN
         CONTINUE
       END IF
-      Notifiable u -> o.user
+      Notifiable u <- o.user
       u.notifyOutOfRange()
     END FOR
-    Book b -> books[ISBN]
-    b.price -> price
-    books[isbn] -> b
+    Book b <- books[ISBN]
+    b.price <- price
+    books[isbn] <- b
   }
 
   'Returns the book price.'
   double getPrice(string isbn) {
-    Book b -> books[ISBN]
+    Book b <- books[ISBN]
     RETURN b.price
   }
 
   'Increment a book count, or insert new item in case of a new inventory.'
   void buyBook(string isbn) {
-    Book b -> books[ISBN]
-    IF NOT b -> null THEN
-      b.num -> b.num + 1
-      books[isbn] -> b
+    Book b <- books[ISBN]
+    IF b != null THEN
+      b.num <- b.num + 1
+      books[isbn] <- b
       RETURN
     END IF
     Book b2
-    b2.price -> MAX_VALUE
-    b2.num -> 1
-    books[isbn] -> b2
+    b2.price <- MAX_VALUE
+    b2.num <- 1
+    books[isbn] <- b2
   }
 
   'Reduce a book count, or error when current count is non-positive.'
   void sellBook(string isbn) {
-    Book b -> books[ISBN]
-    IF b -> null OR current < 1 THEN
+    Book b <- books[ISBN]
+    IF b == null OR current < 1 THEN
       THROW ERROR
     END IF
     IF b > 1 THEN
-      b.num -> b.num - 1
-      books[isbn] -> b
+      b.num <- b.num - 1
+      books[isbn] <- b
       RETURN
     END IF
-    books -> books - b 'by removing key'
+    books <- books - b 'by removing key'
   }
 
   'Count available books given ISBN.'
   integer numBooks(string isbn) {
-    Book b -> books[ISBN]
+    Book b <- books[ISBN]
     RETURN b.num
   }
 }
@@ -241,8 +245,8 @@ class PriceObserver {
     PriceObservation[*] result
     FOR (string isbn, PriceObservation[*] os) IN observations THEN
       FOR PriceObservation o IN os THEN
-        IF o.user -> user THEN
-          result -> result + o
+        IF o.user == user THEN
+          result <- result + o
         END IF
       END FOR
     END FOR
@@ -261,18 +265,18 @@ class PriceObserver {
       THROW ERROR
     END IF
     PriceObservation o
-    o.user -> user
-    o.low -> lowprice
-    o.high -> highprice
-    observations[isbn] -> observations[isbn] + o
+    o.user <- user
+    o.low <- lowprice
+    o.high <- highprice
+    observations[isbn] <- observations[isbn] + o
   }
 
   'Removes all book observations by ISBN assigned to this user.'
   void unobserveOutOfRange(string isbn, Notifiable user) {
-    PriceObservation[*] os -> observations[isbn]
+    PriceObservation[*] os <- observations[isbn]
     FOR PriceObservation o IN os THEN
-      IF o.user -> user AND o.isbn -> isbn THEN
-        o -> os - o
+      IF o.user == user AND o.isbn == isbn THEN
+        o <- os - o
       END IF
     END FOR
   }
@@ -388,25 +392,25 @@ sequenceDiagram
 >     defaultRenderer: "elk"
 > ---
 > flowchart LR
->   Start --T<sub>1</sub>--> Idle
->   Idle --T<sub>2</sub>--> CheckPin[Check pin]
->   CheckPin --T<sub>3</sub>--> Idle
->   CheckPin --T<sub>4</sub>--> Ready
->   Ready --T<sub>5</sub>--> Idle
->   CheckPin --T<sub>6</sub>--> CheckPin
->   Ready --T<sub>7</sub>--> Ready
->   Ready --T<sub>8</sub>--> Ready
->   Ready --T<sub>9</sub>--> Ready
->   Ready --T<sub>10</sub>--> Locked
->   Locked --T<sub>11</sub>--> Ready
->   Overdrawn --T<sub>12</sub>--> Locked
->   Locked --T<sub>13</sub>--> Overdrawn
->   Overdrawn --T<sub>14</sub>--> Ready
->   Ready --T<sub>15</sub>--> Overdrawn
->   Overdrawn --T<sub>16</sub>--> Overdrawn
->   Overdrawn --T<sub>17</sub>--> Overdrawn
->   Overdrawn --T<sub>18</sub>--> Idle
->   CheckPin --T<sub>19</sub>--> Overdrawn
+>   Start -- T<sub>1</sub> --> Idle
+>   Idle -- T<sub>2</sub> --> CheckPin[Check pin]
+>   CheckPin -- T<sub>3</sub> --> Idle
+>   CheckPin -- T<sub>4</sub> --> Ready
+>   Ready -- T<sub>5</sub> --> Idle
+>   CheckPin -- T<sub>6</sub> --> CheckPin
+>   Ready -- T<sub>7</sub> --> Ready
+>   Ready -- T<sub>8</sub> --> Ready
+>   Ready -- T<sub>9</sub> --> Ready
+>   Ready -- T<sub>10</sub> --> Locked
+>   Locked -- T<sub>11</sub> --> Ready
+>   Overdrawn -- T<sub>12</sub> --> Locked
+>   Locked -- T<sub>13</sub> --> Overdrawn
+>   Overdrawn -- T<sub>14</sub> --> Ready
+>   Ready -- T<sub>15</sub> --> Overdrawn
+>   Overdrawn -- T<sub>16</sub> --> Overdrawn
+>   Overdrawn -- T<sub>17</sub> --> Overdrawn
+>   Overdrawn -- T<sub>18</sub> --> Idle
+>   CheckPin -- T<sub>19</sub> --> Overdrawn
 > ```
 >
 > Step | Operation
@@ -531,13 +535,13 @@ class Atm {
   State[6] states
 
   Atm() {
-    states[0] -> new StartState()
-    states[1] -> new IdleState()
-    states[2] -> new CheckPinState()
-    states[3] -> new ReadyState()
-    states[4] -> new OverdrawnState()
-    states[5] -> new LockedState()
-    currentState -> states[0]
+    states[0] <- new StartState()
+    states[1] <- new IdleState()
+    states[2] <- new CheckPinState()
+    states[3] <- new ReadyState()
+    states[4] <- new OverdrawnState()
+    states[5] <- new LockedState()
+    currentState <- states[0]
   }
 
   void create() {
@@ -577,7 +581,7 @@ class Atm {
   }
 
   void changeState(integer id) {
-    currentState -> states[id]
+    currentState <- states[id]
   }
 }
 
@@ -603,7 +607,7 @@ abstract class State {
 }
 
 class StartState implements State {
-  integer id -> 0
+  integer id <- 0
 
   void create() {
     'T1'
@@ -611,51 +615,51 @@ class StartState implements State {
 }
 
 class IdleState implements State {
-  integer id -> 1
+  integer id <- 1
 
   void card(double x, string y) {
     'T2'
-    login.b -> x
-    login.pn -> y
-    login.attempts -> 0
+    login.b <- x
+    login.pn <- y
+    login.attempts <- 0
   }
 }
 
 class CheckPinState implements State {
-  integer id -> 2
+  integer id <- 2
 
   void pin(string x) {
     'T3'
-    IF NOT x -> pn AND attempts -> 3 THEN
+    IF x != pn AND attempts == 3 THEN
       'eject card'
     'T4'
-    ELSE IF x -> pn AND b >= 1000 THEN
+    ELSE IF x == pn AND b >= 1000 THEN
       'display menu'
     'T6'
-    ELSE NOT x -> pn AND attempts < 3 THEN
-      attempts -> attempts + 1
+    ELSE IF x != pn AND attempts < 3 THEN
+      attempts <- attempts + 1
     'T19'
-    ELSE IF x -> pn AND b < 1000 THEN
+    ELSE IF x == pn AND b < 1000 THEN
       'display menu'
     END IF
   }
 }
 
 class ReadyState implements State {
-  integer id -> 3
+  integer id <- 3
 
   void deposit(double d) {
     'T8'
-    login.b -> login.b + d
+    login.b <- login.b + d
   }
 
   void withdraw(double w) {
     'T7'
     IF login.b - w >= 1000 THEN
-      login.b -> login.b - w
+      login.b <- login.b - w
     'T15'
     ELSE IF login.b - w > 0 AND login.b - w < 1000 THEN
-      login.b -> login.b - w - 10
+      login.b <- login.b - w - 10
     END IF
   }
 
@@ -666,7 +670,7 @@ class ReadyState implements State {
 
   void lock(string x) {
     'T10'
-    IF NOT x -> pn THEN
+    IF NOT x == pn THEN
       RETURN
     END IF
   }
@@ -678,15 +682,15 @@ class ReadyState implements State {
 }
 
 class OverdrawnState implements State {
-  integer id -> 4
+  integer id <- 4
 
   void deposit(double d) {
     'T14'
     IF login.b + d >= 1000 THEN
-      login.b -> login.b + d
+      login.b <- login.b + d
     'T17'
     ELSE
-      login.b -> login.b + d - 10
+      login.b <- login.b + d - 10
     END IF
   }
 
@@ -697,7 +701,7 @@ class OverdrawnState implements State {
 
   void lock(string x) {
     'T12'
-    IF NOT x -> pn THEN
+    IF x != pn THEN
       RETURN
     END IF
     atm.changeState(5)
@@ -711,10 +715,10 @@ class OverdrawnState implements State {
 }
 
 class LockedState implements State {
-  integer id -> 5
+  integer id <- 5
 
   void unlock(string x) {
-    IF NOT x -> pn THEN
+    IF x != pn THEN
       RETURN
     END IF
     'T11'
@@ -988,39 +992,39 @@ class Atm {
   AtmLogin login
 
   Atm() {
-    states[0] -> new StartState()
-    states[1] -> new IdleState()
-    states[2] -> new CheckPinState()
-    states[3] -> new ReadyState()
-    states[4] -> new OverdrawnState()
-    states[5] -> new LockedState()
-    currentState -> states[0]
+    states[0] <- new StartState()
+    states[1] <- new IdleState()
+    states[2] <- new CheckPinState()
+    states[3] <- new ReadyState()
+    states[4] <- new OverdrawnState()
+    states[5] <- new LockedState()
+    currentState <- states[0]
   }
 
   void create() {
     currentState.create()
-    IF currentState.getStateId() -> 0 THEN
-      currentState -> states[1]
+    IF currentState.getStateId() == 0 THEN
+      currentState <- states[1]
     END IF
   }
 
   void card(double x, string y) {
     currentState.card(x, y)
-    IF currentState.getStateId() -> 1 THEN
-      currentState -> states[2]
+    IF currentState.getStateId() == 1 THEN
+      currentState <- states[2]
     END IF
   }
 
   void pin(string x) {
-    integer attempts -> login.attempts
+    integer attempts <- login.attempts
     currentState.pin(x)
-    IF currentState.getStateId() -> 2 THEN
-      IF NOT x -> login.pn AND attempts -> 3 THEN
-        currentState -> states[1]
-      ELSE IF x -> login.pn AND login.b >= 1000 THEN
-        currentState -> states[3]
-      ELSE IF x -> login.pn AND login.b < 1000 THEN
-        currentState -> states[4]
+    IF currentState.getStateId() == 2 THEN
+      IF x != login.pn AND attempts == 3 THEN
+        currentState <- states[1]
+      ELSE IF x == login.pn AND login.b >= 1000 THEN
+        currentState <- states[3]
+      ELSE IF x == login.pn AND login.b < 1000 THEN
+        currentState <- states[4]
       END IF
     END IF
   }
@@ -1028,9 +1032,9 @@ class Atm {
   void deposit(double d) {
     double temp = login.b
     currentState.deposit(d)
-    IF currentState.getStateId() -> 4 THEN
+    IF currentState.getStateId() == 4 THEN
       IF temp + d >= 1000 THEN
-        currentState -> states[3]
+        currentState <- states[3]
       END IF
     END IF
   }
@@ -1038,9 +1042,9 @@ class Atm {
   void withdraw(double w) {
     double temp = login.b
     currentState.withdraw(w)
-    IF currentState.getStateId() -> 3 THEN
-      IF temp - w < 1000 AND temp - w > 0
-        currentState -> states[4]
+    IF currentState.getStateId() == 3 THEN
+      IF temp - w < 1000 AND temp - w > 0 THEN
+        currentState <- states[4]
       ELSE IF temp - w >= 1000 THEN
         // no change
       END IF
@@ -1053,28 +1057,28 @@ class Atm {
 
   void lock(string x) {
     currentState.lock(x)
-    IF currentState.getStateId() -> 3 OR currentState.getStateId() -> 4 THEN
-      IF x -> login.pn THEN
-        currentState -> states[5]
+    IF currentState.getStateId() == 3 OR currentState.getStateId() == 4 THEN
+      IF x == login.pn THEN
+        currentState <- states[5]
       END IF
     END IF
   }
 
   void unlock(string x) {
     currentState.unlock(x)
-    IF currentState.getStateId() -> 5 THEN
-      IF x -> login.pn AND login.b >= 1000 THEN
-        currentState -> states[3]
-      ELSE IF x -> login.pn AND login.b < 1000 THEN
-        currentState -> states[4]
+    IF currentState.getStateId() == 5 THEN
+      IF x == login.pn AND login.b >= 1000 THEN
+        currentState <- states[3]
+      ELSE IF x == login.pn AND login.b < 1000 THEN
+        currentState <- states[4]
       END IF
     END IF
   }
 
   void exit() {
     currentState.exit()
-    IF currentState.getStateId() -> 3 OR currentState.getStateId() -> 4 THEN
-      currentState -> states[1]
+    IF currentState.getStateId() == 3 OR currentState.getStateId() == 4 THEN
+      currentState <- states[1]
     END IF
   }
 }
@@ -1117,9 +1121,9 @@ class IdleState implements State {
 
   void card(double x, string y) {
     'T2'
-    login.b -> x
-    login.pn -> y
-    login.attempts -> 0
+    login.b <- x
+    login.pn <- y
+    login.attempts <- 0
   }
 }
 
@@ -1128,16 +1132,16 @@ class CheckPinState implements State {
 
   void pin(string x) {
     'T3'
-    IF NOT x -> pn AND attempts -> 3 THEN
+    IF x != login.pn AND attempts == 3 THEN
       'eject card'
     'T4'
-    ELSE IF x -> pn AND b >= 1000 THEN
+    ELSE IF x == login.pn AND login.b >= 1000 THEN
       'display menu'
     'T6'
-    ELSE NOT x -> pn AND attempts < 3 THEN
-      attempts -> attempts + 1
+    ELSE IF x != login.pn AND attempts < 3 THEN
+      attempts <- attempts + 1
     'T19'
-    ELSE IF x -> pn AND b < 1000 THEN
+    ELSE IF x == login.pn AND login.b < 1000 THEN
       'display menu'
     END IF
   }
@@ -1148,16 +1152,16 @@ class ReadyState implements State {
 
   void deposit(double d) {
     'T8'
-    login.b -> login.b + d
+    login.b <- login.b + d
   }
 
   void withdraw(double w) {
     'T7'
     IF login.b - w >= 1000 THEN
-      login.b -> login.b - w
+      login.b <- login.b - w
     'T15'
     ELSE IF login.b - w > 0 AND login.b - w < 1000 THEN
-      login.b -> login.b - w - 10
+      login.b <- login.b - w - 10
     END IF
   }
 
@@ -1168,7 +1172,7 @@ class ReadyState implements State {
 
   void lock(string x) {
     'T10'
-    IF NOT x -> pn THEN
+    IF x != login.pn THEN
       RETURN
     END IF
   }
@@ -1185,10 +1189,10 @@ class OverdrawnState implements State {
   void deposit(double d) {
     'T14'
     IF login.b + d >= 1000 THEN
-      login.b -> login.b + d
+      login.b <- login.b + d
     'T17'
     ELSE
-      login.b -> login.b + d - 10
+      login.b <- login.b + d - 10
     END IF
     RETURN TRUE
   }
@@ -1200,7 +1204,7 @@ class OverdrawnState implements State {
 
   void lock(string x) {
     'T12'
-    IF NOT x -> pn THEN
+    IF x != login.pn THEN
       RETURN
     END IF
   }
@@ -1215,7 +1219,7 @@ class LockedState implements State {
   integer id = 5
 
   void unlock(string x) {
-    IF NOT x -> pn THEN
+    IF x != login.pn THEN
       RETURN
     END IF
     'T11'

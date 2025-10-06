@@ -27,12 +27,12 @@
 >     defaultRenderer: "elk"
 > ---
 > flowchart LR
->   Start --create(x) / n = 0; p = x --> Idle
->   Idle --cash(x)[(x < p) || (n < 1)] / return cash--> Idle
->   Idle --cash(x)[(x >= p) && (n > 0)]--> Ready
->   Ready --cash(x) / return cash--> Ready
->   Idle --insert_cups(k)[k > 0] / n = n + k--> Idle
->   Ready --coffee[n > 0] / n = n - 1; dispose cup of coffee--> Idle
+>   Start -- create(x) / n = 0; p = x --> Idle
+>   Idle -- cash(x)[(x < p) || (n < 1)] / return cash --> Idle
+>   Idle -- cash(x)[(x >= p) && (n > 0)] --> Ready
+>   Ready -- cash(x) / return cash --> Ready
+>   Idle -- insert_cups(k)[k > 0] / n = n + k --> Idle
+>   Ready -- coffee[n > 0] / n = n - 1; dispose cup of coffee --> Idle
 > ```
 
 ```mermaid
@@ -91,27 +91,27 @@ class Vm {
   State ls[2] 'Ready object'
 
   Vm() {
-    s -> ls[0] 'initialize state to Start'
+    s <- ls[0] 'initialize state to Start'
   }
 
   void changeState(integer id) {
-    s -> ls[id]
+    s <- ls[id]
   }
 
   void create(double x) {
-    s -> create(x)
+    s <- create(x)
   }
 
   void insertCups(integer k) {
-    s -> insertCups(k)
+    s <- insertCups(k)
   }
 
   void cash(double x) {
-    s -> cash(x)
+    s <- cash(x)
   }
 
   void coffee() {
-    s -> coffee()
+    s <- coffee()
   }
 }
 
@@ -124,38 +124,38 @@ abstract class VmState {
 
 class Start {
   void create(double x) {
-    d -> setN(0)
-    d -> setP(x)
-    vm -> changeState(1) 'change state from Start to Idle'
+    d <- setN(0)
+    d <- setP(x)
+    vm <- changeState(1) 'change state from Start to Idle'
   }
 }
 
 class Idle {
   void cash(double x) {
-    IF X >= d -> getP() AND d -> getN() > 0 THEN
-      vm -> changeState(2) 'change state from Idle to Ready'
-    ELSE IF x < d -> getP() OR d -> getN() < 1 THEN
+    IF x >= d.getP() AND d.getN() > 0 THEN
+      vm <- changeState(2) 'change state from Idle to Ready'
+    ELSE IF x < d.getP() OR d.getN() < 1 THEN
       return cash
     END IF
   }
 
   void insertCups(integer k) {
     IF k > 0 THEN
-      numberOfCups -> d.getN()
-      numberOfCups -> numberOfCups + k
-      d -> setN(numberOfCups)
+      numberOfCups <- d.getN()
+      numberOfCups <- numberOfCups + k
+      d <- setN(numberOfCups)
     END IF
   }
 }
 
 class Ready {
   void coffee() {
-    IF d -> getN() > 0 THEN
-      numberOfCups -> d.getN()
-      numberOfCups -> numberOfCups - 1
-      d -> setN(numberOfCups)
+    IF d.getN() > 0 THEN
+      numberOfCups <- d.getN()
+      numberOfCups <- numberOfCups - 1
+      d <- setN(numberOfCups)
       'dispose cup of coffee'
-      vm -> changeState(1) 'change state from Ready to Idle'
+      vm <- changeState(1) 'change state from Ready to Idle'
     END IF
   }
 
@@ -173,7 +173,7 @@ class VmData {
   }
 
   void setN(integer x) {
-    n -> x
+    n <- x
   }
 
   double getP() {
@@ -181,7 +181,7 @@ class VmData {
   }
 
   void setP(double x) {
-    p -> x
+    p <- x
   }
 }
 ```
@@ -364,23 +364,23 @@ class TimeSystem {
 
   notify() {
     FOR EACH ob IN observers DO
-      ob -> update()
+      ob <- update()
     END FOR
   }
 }
 
 class Timer {
   void tick() {
-    second -> second + 1
+    second <- second + 1
     IF second = 60 THEN
-      second -> 0
-      minute -> minute + 1
-      IF minute -> 60 THEN
-        minute -> 0
-        IF hour -> 23 THEN
-          hour -> 0
+      second <- 0
+      minute <- minute + 1
+      IF minute = 60 THEN
+        minute <- 0
+        IF hour = 23 THEN
+          hour <- 0
         ELSE
-          hour -> hour + 1
+          hour <- hour + 1
         END IF
       END IF
       notify()
@@ -402,8 +402,8 @@ class Observer {
   }
 
   void displayTime() {
-    h -> getMinute()
-    m -> getHour()
+    h <- getMinute()
+    m <- getHour()
     print(h + ":" + m)
   }
 }
