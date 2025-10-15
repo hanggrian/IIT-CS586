@@ -1,0 +1,70 @@
+classDiagram
+  direction LR
+  class AtmLogin {
+    +b : double
+    +pn : string
+    +attempts : integer
+  }
+  class Atm {
+    -currentState : State
+    -states: State[6]
+    -login : AtmLogin
+    +create() void
+    +card(x : double, y : string) void
+    +pin(x : string) void
+    +deposit(d : double) void
+    +withdraw(w : double) void
+    +balance() void
+    +lock(x : string) void
+    +unlock(string x) void
+    +exit() void
+    +changeState(id : integer) void
+  }
+  class State {
+    <<abstract>>
+    -atm: Atm
+    +card(x : double, y : string) void
+    +pin(x : string) void
+    +deposit(d : double) void
+    +withdraw(w : double) void
+    +balance() void
+    +lock(x : string) void
+    +unlock(x : string) void
+    +exit() void
+  }
+  AtmLogin "1" -- State : data
+  Atm -- State : ATM
+
+  class StartState {
+    +create() void
+  }
+  class IdleState {
+    +card(x : double, y : string) void
+  }
+  class CheckPinState {
+    +pin(x : string) void
+  }
+  class ReadyState {
+    +exit() void
+    +withdraw(w : double) void
+    +deposit(d : double) void
+    +balance() void
+    +lock(x : string) void
+  }
+  class OverdrawnState {
+    +deposit(d : double) void
+    +exit() void
+    +balance() void
+    +lock(x : string) void
+  }
+  class LockedState {
+    +unlock(x : string) void
+  }
+
+  Atm *-- State : list states
+  State <|-- StartState
+  State <|-- IdleState
+  State <|-- CheckPinState
+  State <|-- ReadyState
+  State <|-- OverdrawnState
+  State <|-- LockedState

@@ -1,0 +1,160 @@
+sequenceDiagram
+  actor Client
+  participant Atm
+  participant AtmLogin
+  participant StartState
+  participant IdleState
+  participant CheckPinState
+  participant ReadyState
+  participant OverdrawnState
+  participant LockedState
+
+  Client ->> Atm : create()
+  activate Atm
+  Atm ->> StartState : T1: create
+  activate StartState
+  StartState -->> Atm :
+  Atm ->> StartState : getStateId()
+  StartState -->> Atm : 0
+  deactivate StartState
+  Atm -->> Client:
+  deactivate Atm
+
+  Client ->> Atm : card(b, pn)
+  activate Atm
+  Atm ->> IdleState : T2: insert card
+  activate IdleState
+  IdleState ->> AtmLogin : get data
+  activate AtmLogin
+  AtmLogin -->> IdleState : data
+  IdleState -->> Atm :
+  deactivate AtmLogin
+  Atm ->> IdleState : getStateId()
+  IdleState -->> Atm : 1
+  deactivate IdleState
+  Atm -->> Client:
+  deactivate Atm
+
+  Client ->> Atm : pin(x)
+  activate Atm
+  Atm ->> CheckPinState : validate pin
+  activate CheckPinState
+  CheckPinState ->> AtmLogin : get data
+  activate AtmLogin
+  AtmLogin -->> CheckPinState : data
+  deactivate AtmLogin
+  alt T3 : x != pn and attempts == 3
+    CheckPinState ->> CheckPinState : eject card
+    CheckPinState -->> Atm :
+    Atm ->> CheckPinState : getStateId()
+    CheckPinState -->> Atm : 1
+  else T4 : x == pn and b >= 1000
+    CheckPinState ->> CheckPinState : display menu
+    CheckPinState -->> Atm :
+    Atm ->> CheckPinState : getStateId()
+    CheckPinState -->> Atm : 3
+  else T6 : x != pn and attempts < 3
+    CheckPinState ->> CheckPinState : attempts++
+    CheckPinState -->> Atm : stay in 'CheckPin'
+  else T19 : x == pn and b < 1000
+    CheckPinState ->> CheckPinState : display menu
+    CheckPinState -->> Atm :
+    Atm ->> CheckPinState : getStateId()
+    CheckPinState -->> Atm : 4
+  end
+  deactivate CheckPinState
+  Atm -->> Client :
+  deactivate Atm
+
+  Client ->> Atm : exit()
+  activate Atm
+  Atm ->> ReadyState : T5: eject card
+  activate ReadyState
+  ReadyState -->> Atm : set state to 'Idle'
+  deactivate ReadyState
+  Atm ->> OverdrawnState : T18: eject card
+  activate OverdrawnState
+  OverdrawnState -->> Atm :
+  Atm ->> OverdrawnState : getStateId()
+  OverdrawnState -->> Atm : 1
+  deactivate OverdrawnState
+  Atm -->> Client :
+  deactivate Atm
+
+  Client ->> Atm : withdraw(w)
+  activate Atm
+  Atm ->> ReadyState : validate amount
+  activate ReadyState
+  ReadyState ->> AtmLogin : get data
+  activate AtmLogin
+  AtmLogin -->> ReadyState : data
+  deactivate AtmLogin
+  alt T7 : b - w >= 1000
+    ReadyState ->> Atm : b = b - w
+    ReadyState -->> Atm : stay in 'Ready'
+  else T15 : 0 < b - w < 1000
+    ReadyState ->> Atm : b = b - w - 10
+    Atm ->> ReadyState : getStateId()
+    ReadyState -->> Atm : 4
+  end
+  deactivate ReadyState
+  Atm -->> Client:
+  deactivate Atm
+
+  Client ->> Atm : deposit(d)
+  activate Atm
+  Atm ->> ReadyState : T8: handle deposit
+  activate ReadyState
+  ReadyState ->> AtmLogin : get data
+  activate AtmLogin
+  AtmLogin -->> ReadyState : data
+  deactivate AtmLogin
+  ReadyState ->> ReadyState : b = b + d
+  ReadyState -->> Atm : stay in 'Ready'
+  deactivate ReadyState
+  Atm -->> Client :
+  deactivate Atm
+
+  Client ->> Atm : balance()
+  activate Atm
+  Atm ->> ReadyState : T9: request balance
+  activate ReadyState
+  ReadyState -->> Atm : display balance b
+  deactivate ReadyState
+  Atm ->> OverdrawnState : T16: request balance
+  activate OverdrawnState
+  OverdrawnState -->> Atm : display balance b
+  deactivate OverdrawnState
+  Atm -->> Client :
+  deactivate Atm
+
+  Client ->> Atm : lock(pin)
+  activate Atm
+  Atm ->> ReadyState : T10: validate pin
+  activate ReadyState
+  ReadyState -->> Atm : set state to 'Locked'
+  deactivate ReadyState
+  Atm ->> OverdrawnState : T12: validate pin
+  activate OverdrawnState
+  OverdrawnState -->> Atm :
+  Atm ->> OverdrawnState : getStateId()
+  OverdrawnState -->> Atm : 5
+  deactivate OverdrawnState
+  Atm -->> Client :
+  deactivate Atm
+
+  Client ->> Atm : unlock(pin)
+  activate Atm
+  Atm ->> LockedState : validate pin
+  activate LockedState
+  LockedState -->> Atm :
+  alt T11 : pin == pn and b >= 1000
+    Atm ->> LockedState : getStateId()
+    LockedState -->> Atm : 3
+  else T13 : pin == pn and b < 1000
+    LockedState ->> Atm : getStateId()
+    LockedState -->> Atm : 4
+  end
+  deactivate LockedState
+  Atm -->> Client :
+  deactivate Atm

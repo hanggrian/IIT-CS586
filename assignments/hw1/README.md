@@ -104,50 +104,10 @@ in a separate class, `PriceObserver`. To share the same attributes, an interface
 `Notifiable` is shared among user components to listen for out-of-range price
 changes made in the system.
 
-```mermaid
-classDiagram
-  class Book {
-    +price : double
-    +num : integer
-  }
-  class PriceObservation {
-    +user : Notifiable
-    +low : integer
-    +high : integer
-  }
-  class BookSystem {
-    -books : Map&lsaquo;string, Book&rsaquo;
-    -observer : PriceObserver
-    +setPrice(isbn : string, price : double) void
-    +getPrice(isbn : string) double
-    +buyBook(isbn : string) void
-    +sellBook(isbn : string) void
-    +numBooks(isbn : string) integer
-  }
-  class PriceObserver {
-    -observations : Map&lsaquo;string, PriceObservation[*]&rsaquo;
-    +listObservations(isbn : string, user : Notifiable) PriceObservation[*]
-    +observeOutOfRange(isbn : string, user : Notifiable, lowprice : double, highprice : double) void
-    +unobserveOutOfRange(isbn : string, user : Notifiable) void
-  }
-  BookSystem *-- "0..*" Book
-  BookSystem -- PriceObserver
-  PriceObserver *-- "0..*" PriceObservation
-
-  class `<small>&laquo;interface&raquo;</small> Notifiable` {
-    +notifyOutOfRange(isbn : string, price : double) void
-  }
-  class UserA {
-    +notifyOutOfRange(isbn : string, price : double) void
-  }
-  class UserB {
-    +notifyOutOfRange(isbn : string, price : double) void
-  }
-  PriceObservation -- `<small>&laquo;interface&raquo;</small> Notifiable`
-  `<small>&laquo;interface&raquo;</small> Notifiable` <|-- UserA
-  `<small>&laquo;interface&raquo;</small> Notifiable` <|-- UserB
-  `<small>&laquo;interface&raquo;</small> Notifiable` ..> BookSystem
-```
+<img
+  width="100%"
+  alt="Diagram 1"
+  src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw1/diagram1.svg"/>
 
 ### Pseudo-code
 
@@ -176,7 +136,7 @@ class BookSystem {
   'Modify a book price and notify users of any out-of-range price change.'
   void setPrice(string isbn, double price) {
     IF price < 0 THEN
-      THROW ERROR
+      THROW ERROR("Negative price.")
     END IF
     Map<string, PriceObservation[*]> observations <- observer.observations
     PriceObservation[*] os <- observations[isbn]
@@ -220,7 +180,7 @@ class BookSystem {
   void sellBook(string isbn) {
     Book b <- books[ISBN]
     IF b == null OR current < 1 THEN
-      THROW ERROR
+      THROW ERROR("Out of stock.")
     END IF
     IF b > 1 THEN
       b.num <- b.num - 1
@@ -262,7 +222,7 @@ class PriceObserver {
     double highprice
   ) {
     IF lowprice < highprice THEN
-      THROW ERROR
+      THROW ERROR("Invalid price range.")
     END IF
     PriceObservation o
     o.user <- user
@@ -316,20 +276,20 @@ sequenceDiagram
   participant UserA
   participant UserB
 
-  UserA -) BookSystem: observeOutOfRange(isbn, user, lowprice, highprice)
+  UserA -) BookSystem : observeOutOfRange(isbn, user, lowprice, highprice)
   activate BookSystem
-  BookSystem ->> PriceObserver: get observer instance
+  BookSystem ->> PriceObserver : get observer instance
   deactivate BookSystem
   activate PriceObserver
-  PriceObserver ->> PriceObserver: insert new observation
+  PriceObserver ->> PriceObserver : insert new observation
   deactivate PriceObserver
 
-  UserB -) BookSystem: observeOutOfRange(isbn, user, lowprice, highprice)
+  UserB -) BookSystem : observeOutOfRange(isbn, user, lowprice, highprice)
   activate BookSystem
-  BookSystem ->> PriceObserver: get observer instance
+  BookSystem ->> PriceObserver : get observer instance
   deactivate BookSystem
   activate PriceObserver
-  PriceObserver ->> PriceObserver: insert new observation
+  PriceObserver ->> PriceObserver : insert new observation
   deactivate PriceObserver
 ```
 
@@ -348,19 +308,19 @@ sequenceDiagram
   participant UserA
   participant UserB
 
-  External -) BookSystem: setPrice(isbn, price)
+  External -) BookSystem : setPrice(isbn, price)
   activate BookSystem
-  BookSystem ->> PriceObserver: get observer instance
+  BookSystem ->> PriceObserver : get observer instance
   deactivate BookSystem
 
   activate PriceObserver
-  PriceObserver ->> PriceObserver: iterate observations
+  PriceObserver ->> PriceObserver : iterate observations
 
-  PriceObserver ->> UserA: notifyOutOfRange(isbn, price)
+  PriceObserver ->> UserA : notifyOutOfRange(isbn, price)
   activate UserA
   deactivate UserA
 
-  PriceObserver ->> UserB: notifyOutOfRange(isbn, price)
+  PriceObserver ->> UserB : notifyOutOfRange(isbn, price)
   activate UserB
   deactivate UserB
 
@@ -449,77 +409,10 @@ sequenceDiagram
 
 #### Class diagram
 
-```mermaid
-classDiagram
-  direction LR
-  class AtmLogin {
-    +b : double
-    +pn : string
-    +attempts : integer
-  }
-  class Atm {
-    -currentState : State
-    -states: State[6]
-    -login : AtmLogin
-    +create() void
-    +card(x : double, y : string) void
-    +pin(x : string) void
-    +deposit(d : double) void
-    +withdraw(w : double) void
-    +balance() void
-    +lock(x : string) void
-    +unlock(string x) void
-    +exit() void
-    +changeState(id : integer) void
-  }
-  class `<small>&laquo;abstract&raquo;</small> State` {
-    -atm: Atm
-    +card(x : double, y : string) void
-    +pin(x : string) void
-    +deposit(d : double) void
-    +withdraw(w : double) void
-    +balance() void
-    +lock(x : string) void
-    +unlock(x : string) void
-    +exit() void
-  }
-  AtmLogin "1" -- `<small>&laquo;abstract&raquo;</small> State` : data
-  Atm -- `<small>&laquo;abstract&raquo;</small> State` : ATM
-
-  class StartState {
-    +create() void
-  }
-  class IdleState {
-    +card(x : double, y : string) void
-  }
-  class CheckPinState {
-    +pin(x : string) void
-  }
-  class ReadyState {
-    +exit() void
-    +withdraw(w : double) void
-    +deposit(d : double) void
-    +balance() void
-    +lock(x : string) void
-  }
-  class OverdrawnState {
-    +deposit(d : double) void
-    +exit() void
-    +balance() void
-    +lock(x : string) void
-  }
-  class LockedState {
-    +unlock(x : string) void
-  }
-
-  Atm *-- `<small>&laquo;abstract&raquo;</small> State` : list states
-  `<small>&laquo;abstract&raquo;</small> State` <|-- StartState
-  `<small>&laquo;abstract&raquo;</small> State` <|-- IdleState
-  `<small>&laquo;abstract&raquo;</small> State` <|-- CheckPinState
-  `<small>&laquo;abstract&raquo;</small> State` <|-- ReadyState
-  `<small>&laquo;abstract&raquo;</small> State` <|-- OverdrawnState
-  `<small>&laquo;abstract&raquo;</small> State` <|-- LockedState
-```
+<img
+  width="100%"
+  alt="Diagram 2.1.1"
+  src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw1/diagram2_1_1.svg"/>
 
 #### Pseudo-code
 
@@ -732,250 +625,19 @@ class LockedState implements State {
 
 #### Sequence diagram
 
-```mermaid
-sequenceDiagram
-  actor Client
-  participant Atm
-  participant AtmLogin
-  participant StartState
-  participant IdleState
-  participant CheckPinState
-  participant ReadyState
-  participant OverdrawnState
-  participant LockedState
-
-  Client ->> Atm: create()
-  activate Atm
-  Atm ->> StartState: T1: create
-  activate StartState
-  StartState -->> Atm:
-  Atm ->> StartState: getStateId()
-  StartState -->> Atm: 0
-  deactivate StartState
-  Atm -->> Client:
-  deactivate Atm
-
-  Client ->> Atm: card(b, pn)
-  activate Atm
-  Atm ->> IdleState: T2: insert card
-  activate IdleState
-  IdleState ->> AtmLogin : get data
-  activate AtmLogin
-  AtmLogin -->> IdleState: data
-  IdleState -->> Atm:
-  deactivate AtmLogin
-  Atm ->> IdleState: getStateId()
-  IdleState -->> Atm: 1
-  deactivate IdleState
-  Atm -->> Client:
-  deactivate Atm
-
-  Client ->> Atm: pin(x)
-  activate Atm
-  Atm ->> CheckPinState: validate pin
-  activate CheckPinState
-  CheckPinState ->> AtmLogin : get data
-  activate AtmLogin
-  AtmLogin -->> CheckPinState: data
-  deactivate AtmLogin
-  alt T3: x != pn and attempts == 3
-    CheckPinState ->> CheckPinState: eject card
-    CheckPinState -->> Atm:
-    Atm ->> CheckPinState: getStateId()
-    CheckPinState -->> Atm: 1
-  else T4: x == pn and b >= 1000
-    CheckPinState ->> CheckPinState: display menu
-    CheckPinState -->> Atm:
-    Atm ->> CheckPinState: getStateId()
-    CheckPinState -->> Atm: 3
-  else T6: x != pn and attempts < 3
-    CheckPinState ->> CheckPinState: attempts++
-    CheckPinState -->> Atm: stay in 'CheckPin'
-  else T19: x == pn and b < 1000
-    CheckPinState ->> CheckPinState: display menu
-    CheckPinState -->> Atm:
-    Atm ->> CheckPinState: getStateId()
-    CheckPinState -->> Atm: 4
-  end
-  deactivate CheckPinState
-  Atm -->> Client:
-  deactivate Atm
-
-  Client ->> Atm: exit()
-  activate Atm
-  Atm ->> ReadyState: T5: eject card
-  activate ReadyState
-  ReadyState -->> Atm: set state to 'Idle'
-  deactivate ReadyState
-  Atm ->> OverdrawnState: T18: eject card
-  activate OverdrawnState
-  OverdrawnState -->> Atm:
-  Atm ->> OverdrawnState: getStateId()
-  OverdrawnState -->> Atm: 1
-  deactivate OverdrawnState
-  Atm -->> Client:
-  deactivate Atm
-
-  Client ->> Atm: withdraw(w)
-  activate Atm
-  Atm ->> ReadyState: validate amount
-  activate ReadyState
-  ReadyState ->> AtmLogin : get data
-  activate AtmLogin
-  AtmLogin -->> ReadyState: data
-  deactivate AtmLogin
-  alt T7: b - w >= 1000
-    ReadyState ->> Atm: b = b - w
-    ReadyState -->> Atm: stay in 'Ready'
-  else T15: 0 < b - w < 1000
-    ReadyState ->> Atm: b = b - w - 10
-    Atm ->> ReadyState: getStateId()
-    ReadyState -->> Atm: 4
-  end
-  deactivate ReadyState
-  Atm -->> Client:
-  deactivate Atm
-
-  Client ->> Atm: deposit(d)
-  activate Atm
-  Atm ->> ReadyState: T8: handle deposit
-  activate ReadyState
-  ReadyState ->> AtmLogin : get data
-  activate AtmLogin
-  AtmLogin -->> ReadyState: data
-  deactivate AtmLogin
-  ReadyState ->> ReadyState: b = b + d
-  ReadyState -->> Atm: stay in 'Ready'
-  deactivate ReadyState
-  Atm -->> Client:
-  deactivate Atm
-
-  Client ->> Atm: balance()
-  activate Atm
-  Atm ->> ReadyState: T9: request balance
-  activate ReadyState
-  ReadyState -->> Atm: display balance b
-  deactivate ReadyState
-  Atm ->> OverdrawnState: T16: request balance
-  activate OverdrawnState
-  OverdrawnState -->> Atm: display balance b
-  deactivate OverdrawnState
-  Atm -->> Client:
-  deactivate Atm
-
-  Client ->> Atm: lock(pin)
-  activate Atm
-  Atm ->> ReadyState: T10: validate pin
-  activate ReadyState
-  ReadyState -->> Atm: set state to 'Locked'
-  deactivate ReadyState
-  Atm ->> OverdrawnState: T12: validate pin
-  activate OverdrawnState
-  OverdrawnState -->> Atm:
-  Atm ->> OverdrawnState: getStateId()
-  OverdrawnState -->> Atm: 5
-  deactivate OverdrawnState
-  Atm -->> Client:
-  deactivate Atm
-
-  Client ->> Atm: unlock(pin)
-  activate Atm
-  Atm ->> LockedState: validate pin
-  activate LockedState
-  LockedState -->> Atm:
-  alt T11: pin == pn and b >= 1000
-    Atm ->> LockedState: getStateId()
-    LockedState -->> Atm: 3
-  else T13: pin == pn and b < 1000
-    LockedState ->> Atm: getStateId()
-    LockedState -->> Atm: 4
-  end
-  deactivate LockedState
-  Atm -->> Client:
-  deactivate Atm
-```
+<img
+  width="100%"
+  alt="Diagram 2.1.2"
+  src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw1/diagram2_1_2.svg"/>
 
 ### Centralized version
 
 #### Class diagram
 
-```mermaid
-classDiagram
-  direction LR
-  class AtmLogin {
-    +b : double
-    +pn : string
-    +attempts : integer
-  }
-  class Atm {
-    -currentState : State
-    -states: State[6]
-    -login : AtmLogin
-    +create() void
-    +card(x : double, y : string) void
-    +pin(x : string) void
-    +deposit(d : double) void
-    +withdraw(w : double) void
-    +balance() void
-    +lock(x : string) void
-    +unlock(x : string) void
-    +exit() void
-  }
-  class `<small>&laquo;abstract&raquo;</small> State` {
-    -login : AtmLogin
-    +card(x : double, y : string) void
-    +pin(x : string) void
-    +deposit(d : double) void
-    +withdraw(w : double) void
-    +balance() void
-    +lock(x : string) void
-    +unlock(x : string) void
-    +exit() void
-    +getStateId() integer
-  }
-  AtmLogin "1" -- `<small>&laquo;abstract&raquo;</small> State` : data
-  AtmLogin "1" -- Atm : data
-
-  class StartState {
-    -id : integer = 0
-    +create() void
-  }
-  class IdleState {
-    -id : integer = 1
-    +card(x : double, y : string) void
-  }
-  class CheckPinState {
-    -id : integer = 2
-    +pin(x : string) void
-  }
-  class ReadyState {
-    -id : integer = 3
-    +exit() void
-    +withdraw(w : double) void
-    +deposit(d : double) void
-    +balance() double
-    +lock(x : string) void
-  }
-  class OverdrawnState {
-    -id : integer = 4
-    +deposit(d : double) void
-    +exit() void
-    +balance() double
-    +lock(x : string) void
-  }
-  class LockedState {
-    -id : integer = 5
-    +unlock(x : string) void
-  }
-
-  Atm *-- `<small>&laquo;abstract&raquo;</small> State` : list states
-  `<small>&laquo;abstract&raquo;</small> State` <|-- StartState
-  `<small>&laquo;abstract&raquo;</small> State` <|-- IdleState
-  `<small>&laquo;abstract&raquo;</small> State` <|-- CheckPinState
-  `<small>&laquo;abstract&raquo;</small> State` <|-- ReadyState
-  `<small>&laquo;abstract&raquo;</small> State` <|-- OverdrawnState
-  `<small>&laquo;abstract&raquo;</small> State` <|-- LockedState
-```
+<img
+  width="100%"
+  alt="Diagram 2.2.1"
+  src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw1/diagram2_2_1.svg"/>
 
 #### Pseudo-code
 
@@ -1233,147 +895,7 @@ class LockedState implements State {
 
 #### Sequence diagram
 
-```mermaid
-sequenceDiagram
-  actor Client
-  participant Atm
-  participant AtmLogin
-  participant StartState
-  participant IdleState
-  participant CheckPinState
-  participant ReadyState
-  participant OverdrawnState
-  participant LockedState
-
-  Client ->> Atm: create()
-  activate Atm
-  Atm ->> StartState: T1: create
-  activate StartState
-  StartState ->> Atm: changeState(1)
-  deactivate StartState
-  Atm -->> Client:
-  deactivate Atm
-
-  Client ->> Atm: card(b, pn)
-  activate Atm
-  Atm ->> IdleState: T2: insert card
-  activate IdleState
-  IdleState ->> AtmLogin : get data
-  activate AtmLogin
-  AtmLogin -->> IdleState: data
-  deactivate AtmLogin
-  IdleState ->> Atm: changeState(2)
-  deactivate IdleState
-  Atm -->> Client:
-  deactivate Atm
-
-  Client ->> Atm: pin(x)
-  activate Atm
-  Atm ->> CheckPinState: validate pin
-  activate CheckPinState
-  CheckPinState ->> AtmLogin : get data
-  activate AtmLogin
-  AtmLogin -->> CheckPinState: data
-  deactivate AtmLogin
-  alt T3: x != pn and attempts == 3
-    CheckPinState ->> CheckPinState: eject card
-    CheckPinState ->> Atm: changeState(1)
-  else T4: x == pn and b >= 1000
-    CheckPinState ->> CheckPinState: display menu
-    CheckPinState ->> Atm: changeState(3)
-  else T6: x != pn and attempts < 3
-    CheckPinState ->> CheckPinState: attempts++
-    CheckPinState -->> Atm: stay in 'CheckPin'
-  else T19: x == pn and b < 1000
-    CheckPinState ->> CheckPinState: display menu
-    CheckPinState ->> Atm: changeState(4)
-  end
-  deactivate CheckPinState
-  Atm -->> Client:
-  deactivate Atm
-
-  Client ->> Atm: exit()
-  activate Atm
-  Atm ->> ReadyState: T5: eject card
-  activate ReadyState
-  ReadyState -->> Atm: set state to 'Idle'
-  deactivate ReadyState
-  Atm ->> OverdrawnState: T18: eject card
-  activate OverdrawnState
-  OverdrawnState ->> Atm: changeState(1)
-  deactivate OverdrawnState
-  Atm -->> Client:
-  deactivate Atm
-
-  Client ->> Atm: withdraw(w)
-  activate Atm
-  Atm ->> ReadyState: validate amount
-  activate ReadyState
-  ReadyState ->> AtmLogin : get data
-  activate AtmLogin
-  AtmLogin -->> ReadyState: data
-  deactivate AtmLogin
-  alt T7: b - w >= 1000
-    ReadyState ->> Atm: b = b - w
-    ReadyState -->> Atm: stay in 'Ready'
-  else T15: 0 < b - w < 1000
-    ReadyState ->> Atm: b = b - w - 10
-    ReadyState ->> Atm: changeState(4)
-  end
-  deactivate ReadyState
-  Atm -->> Client:
-  deactivate Atm
-
-  Client ->> Atm: deposit(d)
-  activate Atm
-  Atm ->> ReadyState: T8: handle deposit
-  activate ReadyState
-  ReadyState ->> AtmLogin : get data
-  activate AtmLogin
-  AtmLogin -->> ReadyState: data
-  deactivate AtmLogin
-  ReadyState ->> ReadyState: b = b + d
-  ReadyState -->> Atm: stay in 'Ready'
-  deactivate ReadyState
-  Atm -->> Client:
-  deactivate Atm
-
-  Client ->> Atm: balance()
-  activate Atm
-  Atm ->> ReadyState: T9: request balance
-  activate ReadyState
-  ReadyState -->> Atm: display balance b
-  deactivate ReadyState
-  Atm ->> OverdrawnState: T16: request balance
-  activate OverdrawnState
-  OverdrawnState -->> Atm: display balance b
-  deactivate OverdrawnState
-  Atm -->> Client:
-  deactivate Atm
-
-  Client ->> Atm: lock(pin)
-  activate Atm
-  Atm ->> ReadyState: T10: validate pin
-  activate ReadyState
-  ReadyState ->> Atm: changeState(5)
-  deactivate ReadyState
-  Atm ->> OverdrawnState: T12: validate pin
-  activate OverdrawnState
-  OverdrawnState ->> Atm: changeState(5)
-  deactivate OverdrawnState
-  Atm -->> Client:
-  deactivate Atm
-
-  Client ->> Atm: unlock(pin)
-  activate Atm
-  Atm ->> LockedState: validate pin
-  activate LockedState
-  alt T11: pin == pn and b >= 1000
-    LockedState ->> Atm: changeState(3)
-  else T13: pin == pn and b < 1000
-    LockedState ->> Atm: changeState(4)
-  end
-  deactivate LockedState
-  Atm -->> Client:
-  deactivate Atm
-```
+<img
+  width="100%"
+  alt="Diagram 2.2.2"
+  src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw1/diagram2_2_2.svg"/>

@@ -1,0 +1,44 @@
+classDiagram
+  direction TB
+  class Book {
+    +price : double
+    +num : integer
+  }
+  class PriceObservation {
+    +user : Notifiable
+    +low : integer
+    +high : integer
+  }
+  class BookSystem {
+    -books : Map&lsaquo;string, Book&rsaquo;
+    -observer : PriceObserver
+    +setPrice(isbn : string, price : double) void
+    +getPrice(isbn : string) double
+    +buyBook(isbn : string) void
+    +sellBook(isbn : string) void
+    +numBooks(isbn : string) integer
+  }
+  class PriceObserver {
+    -observations : Map&lsaquo;string, PriceObservation[*]&rsaquo;
+    +listObservations(isbn : string, user : Notifiable) PriceObservation[*]
+    +observeOutOfRange(isbn : string, user : Notifiable, lowprice : double, highprice : double) void
+    +unobserveOutOfRange(isbn : string, user : Notifiable) void
+  }
+  BookSystem *-- "0..*" Book
+  BookSystem "1" o-- "1" PriceObserver
+  PriceObserver o-- "0..*" PriceObservation
+
+  class Notifiable {
+    <<interface>>
+    +notifyOutOfRange(isbn : string, price : double) void
+  }
+  class UserA {
+    +notifyOutOfRange(isbn : string, price : double) void
+  }
+  class UserB {
+    +notifyOutOfRange(isbn : string, price : double) void
+  }
+  PriceObservation "1" o-- "1" Notifiable
+  Notifiable <|.. UserA
+  Notifiable <|.. UserB
+  Notifiable -- BookSystem : uses
