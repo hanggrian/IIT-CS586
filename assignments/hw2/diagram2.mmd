@@ -1,0 +1,67 @@
+classDiagram
+  direction TB
+  class ClientA {
+    -factory : AbstractFactoryA
+    -server : Server
+    +process() void
+  }
+  class ClientB {
+    -factory : AbstractFactoryB
+    -server : Server
+    +process() void
+  }
+  class Server {
+    -s1: Server1
+    -s2: Server2
+    +configure(factory : AbstractFactory) void
+    +sort(items : Object[]) Object[]
+    +search(items : Object[]) Object
+  }
+  ClientA -- Server : requests
+  ClientB -- Server : requests
+
+  class Server1 {
+    +sort(items : Object[]) Object[]
+  }
+  class Server2 {
+    +search(items : Object[]) Object
+  }
+  Server -- Server1 : responds
+  Server -- Server2 : responds
+
+  class HeapSort {
+    +sort(items : Object[]) Object[]
+  }
+  class MergeSort {
+    +sort(items : Object[]) Object[]
+  }
+  Server1 <|-- HeapSort
+  Server1 <|-- MergeSort
+
+  class BinarySearch {
+    +search(items : Object[]) Object
+  }
+  class LinearSearch {
+    +search(items : Object[]) Object
+  }
+  Server2 <|-- BinarySearch
+  Server2 <|-- LinearSearch
+
+  class AbstractFactory {
+    <<interface>>
+    +getSort() Server1
+    +getSearch() Server2
+  }
+  class AbstractFactoryA {
+    +getSort() Server1
+    +getSearch() Server2
+  }
+  class AbstractFactoryB {
+    +getSort() Server1
+    +getSearch() Server2
+  }
+  AbstractFactory <|-- AbstractFactoryA
+  AbstractFactory <|-- AbstractFactoryB
+  AbstractFactory -- Server : configured by
+  AbstractFactoryA "1" --o ClientA
+  AbstractFactoryB "1" --o ClientB

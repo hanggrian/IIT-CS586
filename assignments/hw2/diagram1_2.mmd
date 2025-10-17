@@ -1,0 +1,54 @@
+sequenceDiagram
+  actor ClientA
+  participant ClientProxyA
+  participant ClientProxy
+  participant Request
+  participant Broker
+  participant ServerProxy
+  participant ServerProxy2
+  participant Server2
+  participant Response
+
+  ClientA ->> ClientProxyA : service2("text", 12)
+  activate ClientProxyA
+
+  ClientProxyA ->> Request : new Request("service2", [string, integer], ["text", 12])
+  activate Request
+  Request -->> ClientProxyA : request
+  deactivate Request
+
+  ClientProxyA ->> ClientProxy : sendRequest(request)
+  activate ClientProxy
+  ClientProxy ->> Broker : sendRequest(request)
+
+  activate Broker
+  Broker ->> ServerProxy : routeRequest(request)
+
+  activate ServerProxy
+  ServerProxy ->> ServerProxy2 : handleRequest(request)
+
+  activate ServerProxy2
+  ServerProxy2 ->> Server2 : handleRequest(request)
+  activate Server2
+  Server2 ->> Server2 : Execute service logic
+  Server2 -->> ServerProxy2 :
+  deactivate Server2
+
+  ServerProxy2 ->> Response : new Response(TRUE, NULL)
+  activate Response
+  Response -->> ServerProxy2 : response
+  deactivate Response
+
+  ServerProxy2 -->> ServerProxy :
+  deactivate ServerProxy2
+  ServerProxy -->> Broker :
+  deactivate ServerProxy
+
+  Broker -->> ClientProxy :
+  deactivate Broker
+
+  ClientProxy -->> ClientProxyA :
+  deactivate ClientProxy
+
+  ClientProxyA -->> ClientA :
+  deactivate ClientProxyA

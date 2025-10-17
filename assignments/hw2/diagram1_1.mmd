@@ -1,0 +1,97 @@
+classDiagram
+  direction TB
+  class ServerS1 {
+    +service1(string, integer, integer) void
+    +service2(string, integer, integer) void
+    +service3(string) integer
+    +service4(string) float
+  }
+  class ServerS2 {
+    +service1(string, integer) void
+    +service2(string, integer) void
+    +service3(string) integer
+    +service4(string) float
+  }
+  class ServerProxy {
+    -server : Server
+    +handleRequest(Request) Response
+  }
+  class ServerProxy1 {
+    -server : Server1
+    +handleRequest(Request) Response
+  }
+  class ServerProxy2 {
+    -server : Server2
+    +handleRequest(Request) Response
+  }
+  ServerProxy1 --|> ServerProxy
+  ServerProxy2 --|> ServerProxy
+  ServerProxy1 -- ServerS1 : delegates
+  ServerProxy2 -- ServerS2 : delegates
+
+  class ClientA {
+    -proxy : ClientProxyA
+    +service1(string, integer, integer) void
+    +service2(string, integer) void
+    +service3(string) integer
+    +service4(string) float
+  }
+  class ClientB {
+    -proxy : ClientProxyB
+    +service1(string, integer) void
+    +service2(string, integer, integer) void
+    +service3(string) integer
+    +service4(string) float
+  }
+  class ClientProxy {
+    -broker : Broker
+    +service1(string, integer) void
+    +service1(string, integer, integer) void
+    +service2(string, integer) void
+    +service2(string, integer, integer) void
+    +service3(string) integer
+    +service4(string) float
+    +sendRequest(Request) Object
+  }
+  class ClientProxyA {
+    -broker : Broker
+    +service1(string, integer, integer) void
+    +service2(string, integer) void
+    +service3(string) integer
+    +service4(string) float
+    +sendRequest(Request) Object
+  }
+  class ClientProxyB {
+    -broker : Broker
+    +service1(string, integer) void
+    +service2(string, integer, integer) void
+    +service3(string) integer
+    +service4(string) float
+    +sendRequest(Request) Object
+  }
+  ClientProxyA --|> ClientProxy
+  ClientProxyB --|> ClientProxy
+  ClientA o-- "1" ClientProxyA
+  ClientB o-- "1" ClientProxyB
+
+  class Broker {
+    -proxies : ServerProxy[*]
+    +routeRequest(Request) Object
+    +registerServer(ServerProxy) void
+    +unregisterServer(ServerProxy) void
+  }
+  class Request {
+    +serviceName : string
+    +parameterTypes : string[1..*]
+    +parameterValues : Object[1..*]
+  }
+  class Response {
+    +isSuccess : boolean
+    +result : Object
+  }
+  Broker o-- "*" ServerProxy
+  ClientProxy -- Broker : sends to
+  Request -- Broker : uses
+  Request -- ServerProxy : processed by
+  Response -- ServerProxy : returned by
+  ClientProxy -- Request : creates
