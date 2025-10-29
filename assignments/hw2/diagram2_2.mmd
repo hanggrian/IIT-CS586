@@ -1,0 +1,48 @@
+sequenceDiagram
+  actor User
+  participant ClientB
+  participant Server
+  participant AbstractFactoryB
+  participant MergeSort
+  participant LinearSearch
+
+  User ->> ClientB : process()
+  activate ClientB
+
+  ClientB ->> AbstractFactoryB : create factory
+  activate AbstractFactoryB
+  AbstractFactoryB -->> ClientB : factory
+
+  ClientB ->> Server : initialize(factory)
+  activate Server
+  Server ->> AbstractFactoryB : getSort()
+  AbstractFactoryB ->> MergeSort : create sort
+  activate MergeSort
+  MergeSort -->> AbstractFactoryB : sort
+  deactivate MergeSort
+  AbstractFactoryB -->> Server :
+  Server ->> AbstractFactoryB : getSearch()
+  AbstractFactoryB ->> LinearSearch : create search
+  activate LinearSearch
+  LinearSearch -->> AbstractFactoryB : search
+  deactivate LinearSearch
+  AbstractFactoryB -->> Server :
+  deactivate AbstractFactoryB
+  note over Server: sort = MergeSort<br>search = LinearSearch
+
+  Server -->> ClientB :
+  ClientB ->> Server : sort(items)
+  Server ->> MergeSort : sort by MergeSort
+  activate MergeSort
+  MergeSort -->> Server : sorted items
+  deactivate MergeSort
+
+  Server -->> ClientB :
+  ClientB ->> Server : search(items)
+  Server ->> LinearSearch : search by LinearSearch
+  activate LinearSearch
+  LinearSearch -->> Server : searched item
+  deactivate LinearSearch
+  Server -->> ClientB :
+  deactivate Server
+  deactivate ClientB

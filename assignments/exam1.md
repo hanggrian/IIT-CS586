@@ -7,7 +7,7 @@
   `cash(float x)`, `insert_cups(int k)`, `coffee()`
 >
 > Design the system using the **State design pattern.** You should use the
-  **de-centralized** version of this pattern.
+  **decentralized** version of this pattern.
 >
 > In your solution:
 >
@@ -206,7 +206,7 @@ sequenceDiagram
   Data -->> Start:
   deactivate Data
   Start ->> Vm: changeState(1)
-  Note over Vm: s -> ls[1]
+  note over Vm: s -> ls[1]
   Vm -->> Start:
   Start -->> Vm:
   deactivate Start
@@ -240,7 +240,7 @@ sequenceDiagram
   Data -->> Idle: 2.5
   deactivate Data
   Idle ->> Vm: changeState(2)
-  Note over Vm: s -> ls[2]
+  note over Vm: s -> ls[2]
   Vm -->> Idle:
   Idle -->> Vm:
   deactivate Idle
@@ -259,7 +259,7 @@ sequenceDiagram
   Data -->> Ready:
   deactivate Data
   Ready ->> Vm: changeState(1)
-  Note over Vm: s -> ls[1]
+  note over Vm: s -> ls[1]
   Vm -->> Ready:
   Ready -->> Vm:
   deactivate Ready

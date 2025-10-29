@@ -12,10 +12,8 @@
 
 ## Problem 1
 
-> There exist two servers S1 and S2. Both servers support the following
+> There exist two servers **S1** and **S2.** Both servers support the following
   services:
-> <table>
-> </table>
 >
 > Services supported by **server-S1:**
 >
@@ -55,7 +53,7 @@
 >
 > - Provide a class diagram for the proposed architecture. In your design, all
     components should be **decoupled** as much as possible.
-> - Provide the **pseudocode** for all operations of the following
+> - Provide the **pseudo-code** for all operations of the following
     components/classes:
 >   - Broker
 >   - Client Proxy of *Client-A*
@@ -74,25 +72,27 @@
 
 ```vb
 class Broker {
-  ServerProxy[] proxies
+  ServerProxy currentProxy
+  Map<string, ServerProxy> proxies
 
-  void registerServer(ServerProxy proxy) {
-    proxies <- proxies + proxy
+  void registerServer(ServerProxy proxy, string operation) {
+    proxies.put(operation, proxy)
   }
 
   void unregisterServer(ServerProxy proxy) {
-    proxies <- proxies - proxy
-  }
-
-  Object routeRequest(Request request) {
-    'There may be multiple proxies of the same server, execute once.'
-    FOR proxy IN proxies DO
-      Response response <- proxy.handleRequest(request)
-      IF response.isSuccess THEN
-        RETURN response.result
+    FOR operation IN proxies DO
+      ServerProxy p <- proxies.get(operation)
+      IF p == proxy THEN
+        proxies.remove(operation)
       END IF
     END FOR
-    THROW ERROR("Server not found.")
+  }
+
+  void forwardServer(Request request) {
+    ServerProxy proxy <- proxies.get(request.operation)
+    IF proxy != NULL THEN
+      proxy.callServer(request)
+    END IF
   }
 }
 
@@ -101,82 +101,51 @@ class ClientAProxy {
 
   void service1(string s, integer i1, integer i2) {
     Request request
-    request.serviceName <- "service1"
-    request.parameterTypes <- [string, integer, integer]
-    request.parameterValues <- [s, i1, i2]
-    sendRequest(request)
+    request.operation <- "void service1(string, int, int)"
+    request.s <- s
+    request.i1 <- i1
+    request.i2 <- i2
+    broker.forwardServer(request)
   }
 
   void service2(string s, integer i) {
     Request request
-    request.serviceName <- "service2"
-    request.parameterTypes <- [string, integer]
-    request.parameterValues <- [s, i]
-    sendRequest(request)
+    request.operation <- "void service2(string, int)"
+    request.s <- s
+    request.i1 <- i
+    broker.forwardServer(request)
   }
 
   integer service3(string s) {
     Request request
-    request.serviceName <- "service3"
-    request.parameterTypes <- [string]
-    request.parameterValues <- [s]
-    integer result <- sendRequest(request)
-    RETURN result
+    request.operation <- "int service3(string)"
+    request.s <- s
+    broker.forwardServer(request)
+    RETURN request.result1
   }
 
   float service4(string s) {
     Request request
-    request.serviceName <- "service4"
-    request.parameterTypes <- [string]
-    request.parameterValues <- [s]
-    float result <- sendRequest(request)
-    RETURN result
-  }
-
-  Object sendRequest(Request request) {
-    broker.routeRequest(request)
+    request.operation <- "float service4(string)"
+    request.s <- s
+    broker.forwardServer(request)
+    RETURN request.result2
   }
 }
 
 class Server2Proxy {
   Server2 server2
 
-  Response handleRequest(Request request) {
-    name <- request.serviceName
-    types <- request.parameterTypes
-    values <- request.parameterValues
-
-    Response response
-    IF name == "service1" THEN
-      IF types.size == 3 AND
-        types[0] == string AND
-        types[1] == integer AND
-        types[2] == integer THEN
-        response.isSuccess <- TRUE
-        server2.service1(values[0], values[1], values[2])
-      END IF
-    ELSE IF name == "service2" THEN
-      IF types.size == 3 AND
-        types[0] == string AND
-        types[1] == integer AND
-        types[2] == integer THEN
-        response.isSuccess <- TRUE
-        server2.service2(values[0], values[1], values[2])
-      END IF
-    ELSE IF name == "service3" THEN
-      IF types.size == 1 AND
-        types[0] == string THEN
-        response.isSuccess <- TRUE
-        response.result <- server2.service3(values[0])
-      END IF
-    ELSE IF name == "service4" THEN
-      IF types.size == 1 AND
-        types[0] == string THEN
-        response.isSuccess <- TRUE
-        response.result <- server2.service4(values[0])
-      END IF
+  void callServer(Request request) {
+    IF request.operation == "void service1(string, int)" THEN
+      server2.service1(request.s, request.i1)
+    ELSE IF request.operation == "void service2(string, int)" THEN
+      server2.service2(request.s, request.i1)
+    ELSE IF request.operation == "int service3(string)" THEN
+      request.result1 <- server2.service3(request.s)
+    ELSE IF request.operation == "float service4(string)" THEN
+      request.result2 <- server2.service4(request.s)
     END IF
-    RETURN response
   }
 }
 ```
@@ -204,7 +173,7 @@ class Server2Proxy {
 >   }
 >   S1 <|-- S1_1
 >   S1 <|-- S1_2
->   Client_A -- S1
+>   ClientA -- S1
 >
 >   class S2 {
 >     +service2()
@@ -217,7 +186,7 @@ class Server2Proxy {
 >   }
 >   S2 <|-- S2_1
 >   S2 <|-- S2_2
->   Client_B -- S2
+>   ClientB -- S2
 >
 >   class S3 {
 >     +service3()
@@ -230,7 +199,7 @@ class Server2Proxy {
 >   }
 >   S3 <|-- S3_1
 >   S3 <|-- S3_2
->   Client_C -- S3
+>   ClientC -- S3
 > ```
 >
 > A design of a system is shown above. In this system, *Client_A* uses objects
@@ -277,7 +246,7 @@ classDiagram
   }
   S1 <|-- S1_1
   S1 <|-- S1_2
-  Client_A -- S1
+  ClientA -- S1 : calls
 
   class S2 {
     +service2()
@@ -290,7 +259,7 @@ classDiagram
   }
   S2 <|-- S2_1
   S2 <|-- S2_2
-  Client_B -- S2
+  ClientB -- S2 : calls
 
   class S3 {
     +service3()
@@ -303,32 +272,32 @@ classDiagram
   }
   S3 <|-- S3_1
   S3 <|-- S3_2
-  Client_C -- S3
+  ClientC -- S3 : calls
 
-  class AdapterA {
+  class AdapterS1toS2 {
     +service1()
     -adaptee : S2
   }
-  class AdapterB {
+  class AdapterS2toS3 {
     +service2()
     -adaptee : S3
   }
-  class AdapterC {
+  class AdapterS3toS1 {
     +service3()
     -adaptee : S1
   }
-  S1 <|-- AdapterA
-  S2 <|-- AdapterB
-  S3 <|-- AdapterC
-  S2 "1" --o AdapterA
-  S3 "1" --o AdapterB
-  S1 "1" --o AdapterC
+  S1 <|-- AdapterS1toS2
+  S2 <|-- AdapterS2toS3
+  S3 <|-- AdapterS3toS1
+  S2 -- AdapterS1toS2 : adapts
+  S3 -- AdapterS2toS3 : adapts
+  S1 -- AdapterS3toS1 : adapts
 ```
 
 #### Pseudo-code
 
 ```vb
-class AdapterA implements S1 {
+class AdapterS1toS2 implements S1 {
   S2 adaptee
 
   void service1() {
@@ -336,7 +305,7 @@ class AdapterA implements S1 {
   }
 }
 
-class AdapterB implements S2 {
+class AdapterS2toS3 implements S2 {
   S3 adaptee
 
   void service2() {
@@ -344,7 +313,7 @@ class AdapterB implements S2 {
   }
 }
 
-class AdapterC implements S3 {
+class AdapterS3toS1 implements S3 {
   S1 adaptee
 
   void service3() {
@@ -371,7 +340,7 @@ classDiagram
   }
   S1 <|-- S1_1
   S1 <|-- S1_2
-  Client_A -- S1
+  ClientA -- S1 : calls
 
   class S2 {
     +service2()
@@ -384,7 +353,7 @@ classDiagram
   }
   S2 <|-- S2_1
   S2 <|-- S2_2
-  Client_B -- S2
+  ClientB -- S2 : calls
 
   class S3 {
     +service3()
@@ -397,104 +366,74 @@ classDiagram
   }
   S3 <|-- S3_1
   S3 <|-- S3_2
-  Client_C -- S3
+  ClientC -- S3 : calls
 
-  class AdapterA1 {
-    +service1()
-    +service2()
-  }
-  class AdapterA2 {
-    +service1()
-    +service2()
-  }
-  class AdapterB1 {
-    +service2()
-    +service3()
-  }
-  class AdapterB2 {
-    +service2()
-    +service3()
-  }
-  class AdapterC1 {
-    +service3()
+  class AdapterS1toS2_1 {
     +service1()
   }
-  class AdapterC2 {
-    +service3()
+  class AdapterS1toS2_2 {
     +service1()
   }
-  S2_1 <|-- AdapterA1
-  S1 <|.. AdapterA1
-  S2_2 <|-- AdapterA2
-  S1 <|.. AdapterA2
-  S3_1 <|-- AdapterB1
-  S2 <|.. AdapterB1
-  S3_2 <|-- AdapterB2
-  S2 <|.. AdapterB2
-  S1_1 <|-- AdapterC1
-  S3 <|.. AdapterC1
-  S1_2 <|-- AdapterC2
-  S3 <|.. AdapterC2
+  class AdapterS2toS3_1 {
+    +service2()
+  }
+  class AdapterS2toS3_2 {
+    +service2()
+  }
+  class AdapterS3toS1_1 {
+    +service3()
+  }
+  class AdapterS3toS1_2 {
+    +service3()
+  }
+  S2_1 <|-- AdapterS1toS2_1
+  S1 <|-- AdapterS1toS2_1
+  S2_2 <|-- AdapterS1toS2_2
+  S1 <|-- AdapterS1toS2_2
+  S3_1 <|-- AdapterS2toS3_1
+  S2 <|-- AdapterS2toS3_1
+  S3_2 <|-- AdapterS2toS3_2
+  S2 <|-- AdapterS2toS3_2
+  S1_1 <|-- AdapterS3toS1_1
+  S3 <|-- AdapterS3toS1_1
+  S1_2 <|-- AdapterS3toS1_2
+  S3 <|-- AdapterS3toS1_2
 ```
 
 #### Pseudo-code
 
 ```vb
-class AdapterA1 implements S2_1, S1 {
-  void service2() {
-    'inherit implementation'
-  }
-
+class AdapterS1toS2_1 implements S1, S2_1 {
   void service1() {
     service2()
   }
 }
 
-class AdapterA2 implements S2_2, S1 {
-  void service2() {
-    'inherit implementation'
-  }
-
+class AdapterS1toS2_2 implements S1, S2_2 {
   void service1() {
     service2()
   }
 }
 
-class AdapterB1 implements S3_1, S2 {
-  void service3() {
-    'inherit implementation'
-  }
-
+class AdapterS2toS3_1 implements S2, S3_1 {
   void service2() {
     service3()
   }
 }
 
-class AdapterB2 implements S3_2, S2 {
-  void service3() {
-    'inherit implementation'
-  }
-
+class AdapterS2toS3_2 implements S2, S3_2 {
   void service2() {
     service3()
   }
 }
 
-class AdapterC1 implements S1_1, S3 {
-  void service1() {
-    'inherit implementation'
-  }
-
+class AdapterS3toS1_1 implements S3, S1_1 {
   void service3() {
     service1()
   }
 }
 
-class AdapterC2 implements S1_2, S3 {
-  void service1() {
-    'inherit implementation'
-  }
-
+class AdapterS3toS1_2 implements S3, S1_2 {
   void service3() {
     service1()
   }
@@ -586,114 +525,88 @@ class AdapterC2 implements S1_2, S3 {
 
 <img
   width="100%"
-  alt="Diagram 2"
-  src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw2/diagram2.svg"/>
+  alt="Diagram 2.1"
+  src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw2/diagram2_1.svg"/>
 
 ### Pseudo-code
 
 ```vb
-interface AbstractFactory {
-  Server1 getSort()
-
-  Server2 getSearch()
-}
-
-class AbstractFactoryA implements AbstractFactory {
-  Server1 getSort() {
-    HeapSort sort
-    RETURN sort
-  }
-
-  Server2 getSearch() {
-    BinarySearch search
-    RETURN search
-  }
-}
-
-class AbstractFactoryB implements AbstractFactory {
-  Server1 getSort() {
-    HeapSort sort
-    RETURN sort
-  }
-
-  Server2 getSearch() {
-    BinarySearch search
-    RETURN search
-  }
-}
-
 class ClientA {
   Server server
-  AbstractFactoryA factory
+  AbstractFactory factory
 
   void process() {
-    server.configure(factory)
+    AbstractFactory1 f
+    server.initialize(f)
     'Do sort and search'
   }
 }
 
 class ClientB {
   Server server
-  AbstractFactoryB factory
+  AbstractFactory factory
 
   void process() {
-    server.configure(factory)
+    AbstractFactory2 f
+    server.initialize(f)
     'Do sort and search'
   }
 }
 
 class Server {
-  Server1 s1
-  Server2 s2
+  Sort sort
+  Search search
 
-  void configure(AbstractFactory factory) {
-    s1 <- factory.getSort()
-    s2 <- factory.getSearch()
+  void initialize(AbstractFactory factory) {
+    sort <- factory.getSort()
+    search <- factory.getSearch()
   }
 
   Object[] sort(Object[] items) {
-    Object[] result <- s1.sort(items)
-    return result
+    Object[] result <- sort.sort(items)
+    RETURN result
   }
 
   Object search(Object[] items) {
-    Object result <- s2.search(items)
-    return result
+    Object result <- search.search(items)
+    RETURN result
+  }
+}
+
+interface AbstractFactory {
+  Sort getSort()
+
+  Search getSearch()
+}
+
+class AbstractFactoryA implements AbstractFactory {
+  Sort getSort() {
+    HeapSort sort
+    RETURN sort
+  }
+
+  Search getSearch() {
+    BinarySearch search
+    RETURN search
+  }
+}
+
+class AbstractFactoryB implements AbstractFactory {
+  Sort getSort() {
+    MergeSort sort
+    RETURN sort
+  }
+
+  Search getSearch() {
+    LinearSearch search
+    RETURN search
   }
 }
 ```
 
 ### Sequence diagram
 
-```mermaid
-sequenceDiagram
-  actor ClientB
-  participant AbstractFactoryB
-  participant Server
-  participant MergeSort
-  participant LinearSearch
-
-  ClientB ->> AbstractFactoryB : process()
-  activate AbstractFactoryB
-  AbstractFactoryB -->> ClientB : MergeSort and LinearSearch
-  deactivate AbstractFactoryB
-
-  ClientB ->> Server : configure(factory)
-  activate Server
-  Note over Server : s1 = MergeSort<br/>s2 = LinearSearch
-
-  ClientB ->> Server : sort(items)
-  Server ->> MergeSort : MergeSort
-  activate MergeSort
-  MergeSort -->> Server : sorted items
-  deactivate MergeSort
-  Server -->> ClientB : sorted items
-
-  ClientB ->> Server : search(items)
-  Server ->> LinearSearch : LinearSearch
-  activate LinearSearch
-  LinearSearch -->> Server : searched item
-  deactivate LinearSearch
-  Server -->> ClientB : searched item
-  deactivate Server
-```
+<img
+  width="100%"
+  alt="Diagram 2.2"
+  src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw2/diagram2_2.svg"/>

@@ -165,7 +165,7 @@ class BookSystem {
   'Increment a book count, or insert new item in case of a new inventory.'
   void buyBook(string isbn) {
     Book b <- books[ISBN]
-    IF b != null THEN
+    IF b != NULL THEN
       b.num <- b.num + 1
       books[isbn] <- b
       RETURN
@@ -179,7 +179,7 @@ class BookSystem {
   'Reduce a book count, or error when current count is non-positive.'
   void sellBook(string isbn) {
     Book b <- books[ISBN]
-    IF b == null OR current < 1 THEN
+    IF b == NULL OR current < 1 THEN
       THROW ERROR("Out of stock.")
     END IF
     IF b > 1 THEN

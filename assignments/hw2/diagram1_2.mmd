@@ -1,54 +1,46 @@
 sequenceDiagram
-  actor ClientA
+  actor User
+  participant ClientA
   participant ClientProxyA
-  participant ClientProxy
   participant Request
   participant Broker
-  participant ServerProxy
   participant ServerProxy2
   participant Server2
-  participant Response
+
+  ServerProxy2 ->> Broker : register(self, "void service2(string, int")
+  activate Broker
+  activate ServerProxy2
+  deactivate ServerProxy2
+
+  User ->> ClientA : process()
+  activate ClientA
 
   ClientA ->> ClientProxyA : service2("text", 12)
   activate ClientProxyA
 
-  ClientProxyA ->> Request : new Request("service2", [string, integer], ["text", 12])
+  ClientProxyA ->> Request : operation="void service2(string, int)"<br>s="text"<br>i1="int"
   activate Request
   Request -->> ClientProxyA : request
   deactivate Request
 
-  ClientProxyA ->> ClientProxy : sendRequest(request)
-  activate ClientProxy
-  ClientProxy ->> Broker : sendRequest(request)
+  ClientProxyA ->> Broker : forwardServer(request)
 
-  activate Broker
-  Broker ->> ServerProxy : routeRequest(request)
-
-  activate ServerProxy
-  ServerProxy ->> ServerProxy2 : handleRequest(request)
+  Broker ->> Broker : findServer(request.operation)
+  Broker ->> ServerProxy2 : callServer(request)
 
   activate ServerProxy2
-  ServerProxy2 ->> Server2 : handleRequest(request)
+  ServerProxy2 ->> Server2 : service2(request.a, request.i1)
   activate Server2
   Server2 ->> Server2 : Execute service logic
-  Server2 -->> ServerProxy2 :
+  Server2 -->> ServerProxy2 : null
   deactivate Server2
 
-  ServerProxy2 ->> Response : new Response(TRUE, NULL)
-  activate Response
-  Response -->> ServerProxy2 : response
-  deactivate Response
-
-  ServerProxy2 -->> ServerProxy :
+  ServerProxy2 -->> Broker :
   deactivate ServerProxy2
-  ServerProxy -->> Broker :
-  deactivate ServerProxy
 
-  Broker -->> ClientProxy :
+  Broker -->> ClientProxyA :
   deactivate Broker
-
-  ClientProxy -->> ClientProxyA :
-  deactivate ClientProxy
 
   ClientProxyA -->> ClientA :
   deactivate ClientProxyA
+  deactivate ClientA

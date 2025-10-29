@@ -11,6 +11,8 @@ Reuse of design solutions.
 - Adapter pattern
 - Strategy pattern
 - Abstract factory pattern
+- Proxy pattern
+- De-coupling pattern
 
 ### Item description pattern
 
@@ -37,7 +39,7 @@ An object consists of parts of different types.
 classDiagram
   direction LR
   class Directory {
-    +files: File[]
+    +files : File[]
   }
   Directory o-- "*" File : contains
   Directory --|> File
@@ -52,30 +54,117 @@ Publisher-subscriber model.
 ```mermaid
 classDiagram
   direction LR
-  class BookSubject {
-    -users : UserType[]
-    +register(o : Observer) void
-    +unregister(o : Observer) void
-    +notify() void
+  class Subject {
+    -observers : Observer[]
+    +notify()
+    +register(Observer)
+    +unregister(Observer)
   }
-  class UserType {
+  Subject <|-- ConcreteSubject
+
+  class Observer {
+    -subject : Subject
     +update()
   }
-  BookSystem <|-- BookSubject
-  BookSubject -- "*" UserType
+  class ObserverA {
+    +update()
+  }
+  class ObserverB {
+    +update()
+  }
+  Subject -- Observer : observes
+  Observer <|-- ObserverA
+  Observer <|-- ObserverB
 ```
 
 ### State pattern
 
 Declare state objects to represent different states of a class.
 
+#### Centralized
+
 ```mermaid
 classDiagram
   direction LR
-  Content o-- "*" State : states
-  StateA --|> State
-  StateB --|> State
-  StateC --|> State
+  class Data {
+    +min : integer
+    +max : integer
+  }
+  class Stack {
+    -currentState : State
+    -states : State[]
+    -data : Data
+    +push()
+    +pop()
+  }
+  Data "1" -- Stack
+
+  class State {
+    -data : Data
+    -id : integer
+    +push()
+    +pop()
+    +getId() integer
+  }
+  class EmptyState {
+    -id : integer = 0
+    +push()
+  }
+  class PartialState {
+    -id : integer = 1
+    +push()
+    +pop()
+  }
+  class FullState {
+    -id : integer = 2
+    +pop()
+  }
+  Data "1" -- State
+  Stack -- "*" State
+  State <|-- EmptyState
+  State <|-- PartialState
+  State <|-- FullState
+```
+
+#### Decentralized
+
+```mermaid
+classDiagram
+  direction LR
+  class Data {
+    +min : integer
+    +max : integer
+  }
+  class Stack {
+    -currentState : State
+    -states : State[]
+    -data : Data
+    +push()
+    +pop()
+    +changeState(State)
+  }
+
+  class State {
+    -data : Data
+    -stack : Stack
+    +push()
+    +pop()
+  }
+  class EmptyState {
+    +push()
+  }
+  class PartialState {
+    +push()
+    +pop()
+  }
+  class FullState {
+    +pop()
+  }
+  Data "1" -- State
+  Stack -- "*" State
+  State <|-- EmptyState
+  State <|-- PartialState
+  State <|-- FullState
 ```
 
 ### Adapter pattern
@@ -83,47 +172,7 @@ classDiagram
 Introduce a wrapper that allows the interface of an existing class to be used as
 another interface.
 
-#### Inheritance-based
-
-The servers share a common interface.
-
-```mermaid
-classDiagram
-  direction LR
-  class Client {
-    -server
-    +process()
-  }
-  class ServerA {
-    +m1()
-    +m2()
-  }
-  class ServerB {
-    +p1()
-    +p2()
-  }
-  class ServiceA {
-    +m1()
-    +m2()
-  }
-  class ServiceB {
-    +m1()
-    +m2()
-  }
-  class Adapter {
-    -serviceC
-    +m1()
-    +m2()
-  }
-  ServerA <|-- ServiceA
-  ServerA <|-- ServiceB
-  ServerA <|-- Adapter
-  ServerB <|-- Adapter
-
-  Client -- ServerA
-```
-
-### Association-based
+#### Association-based
 
 The adapter communicates from one server to another with association.
 
@@ -169,6 +218,46 @@ classDiagram
   Client -- ServerA
 ```
 
+#### Inheritance-based
+
+The servers share a common interface.
+
+```mermaid
+classDiagram
+  direction LR
+  class Client {
+    -server
+    +process()
+  }
+  class ServerA {
+    +m1()
+    +m2()
+  }
+  class ServerB {
+    +p1()
+    +p2()
+  }
+  class ServiceA {
+    +m1()
+    +m2()
+  }
+  class ServiceB {
+    +m1()
+    +m2()
+  }
+  class Adapter {
+    -serviceC
+    +m1()
+    +m2()
+  }
+  ServerA <|-- ServiceA
+  ServerA <|-- ServiceB
+  ServerA <|-- Adapter
+  ServerB <|-- Adapter
+
+  Client -- ServerA
+```
+
 ### Strategy pattern
 
 Encapsulate each algorithm or requirement in a separate class.
@@ -176,48 +265,146 @@ Encapsulate each algorithm or requirement in a separate class.
 ```mermaid
 classDiagram
   direction LR
-  class Strategy {
-    +algo()
+  class CalcTax {
+    +calculate()
   }
-  class StrategyA {
-    +algo()
+  class EU {
+    +calculate()
   }
-  class StrategyB {
-    +algo()
+  class US {
+    +calculate()
   }
-  class StrategyC {
-    +algo()
+  class Canada {
+    +calculate()
   }
-  Client -- Strategy
-  Strategy <-- StrategyA
-  Strategy <-- StrategyB
-  Strategy <-- StrategyC
+  class SalesOrder {
+    -calc : CalcTax
+    +calculate()
+  }
+  Application -- SalesOrder
+  SalesOrder -- CalcTax
+  CalcTax <|-- EU
+  CalcTax <|-- US
+  CalcTax <|-- Canada
 ```
 
 ### Abstract factory pattern
 
-Provides an interface (or abstract class) for creating families of related or
-dependent objects without specifying their concrete classes.
+Application needs to be de-coupled from the problem of creating the objects.
 
 ```mermaid
 classDiagram
   direction LR
-  `<small>&laquo;abstract&raquo;</small> ProductA1` -- `<small>&laquo;abstract&raquo;</small> ConcreteFactory1`
-  `<small>&laquo;abstract&raquo;</small> ProductA2` -- `<small>&laquo;abstract&raquo;</small> ConcreteFactory2`
+  class AbstractProductA {
+    <<abstract>>
+  }
+  class AbstractProductB {
+    <<abstract>>
+  }
+  class AbstractFactory {
+    <<abstract>>
+  }
 
-  `<small>&laquo;abstract&raquo;</small> ProductB1` -- `<small>&laquo;abstract&raquo;</small> ConcreteFactory1`
-  `<small>&laquo;abstract&raquo;</small> ProductB2` -- `<small>&laquo;abstract&raquo;</small> ConcreteFactory2`
+  class ProductA1 {
+    <<abstract>>
+  }
+  class ProductA2 {
+    <<abstract>>
+  }
+  class ProductB1 {
+    <<abstract>>
+  }
+  class ProductB2 {
+    <<abstract>>
+  }
 
-  `<small>&laquo;abstract&raquo;</small> AbstractFactory` <|-- `<small>&laquo;abstract&raquo;</small> ConcreteFactory1`
-  `<small>&laquo;abstract&raquo;</small> AbstractFactory` <|-- `<small>&laquo;abstract&raquo;</small> ConcreteFactory2`
+  class ConcreteFactory1 {
+    <<abstract>>
+  }
+  class ConcreteFactory2 {
+    <<abstract>>
+  }
 
-  `<small>&laquo;abstract&raquo;</small> AbstractProductA` <|-- `<small>&laquo;abstract&raquo;</small> ProductA1`
-  `<small>&laquo;abstract&raquo;</small> AbstractProductA` <|-- `<small>&laquo;abstract&raquo;</small> ProductA2`
+  ProductA1 -- ConcreteFactory1
+  ProductA2 -- ConcreteFactory2
 
-  Application -- `<small>&laquo;abstract&raquo;</small> AbstractProductA`
-  Application -- `<small>&laquo;abstract&raquo;</small> AbstractProductB`
-  Application -- `<small>&laquo;abstract&raquo;</small> AbstractFactory`
+  ProductB1 -- ConcreteFactory1
+  ProductB2 -- ConcreteFactory2
 
-  `<small>&laquo;abstract&raquo;</small> AbstractProductB` <|-- `<small>&laquo;abstract&raquo;</small> ProductB1`
-  `<small>&laquo;abstract&raquo;</small> AbstractProductB` <|-- `<small>&laquo;abstract&raquo;</small> ProductB2`
+  AbstractFactory <|-- ConcreteFactory1
+  AbstractFactory <|-- ConcreteFactory2
+
+  AbstractProductA <|-- ProductA1
+  AbstractProductA <|-- ProductA2
+
+  Application -- AbstractProductA
+  Application -- AbstractProductB
+  Application -- AbstractFactory
+
+  AbstractProductB -- ProductB1
+  AbstractProductB -- ProductB2
+```
+
+## Proxy pattern
+
+Coordinate interactions between a client and servers.
+
+```mermaid
+classDiagram
+  direction LR
+  Client -- Proxy
+  Proxy -- S1
+  Proxy -- S2
+  Proxy -- S100
+  note for S1 "Busy"
+  note for S2 "Busy"
+  note for S100 "Idle"
+```
+
+### Protection proxy
+
+To protect server from unauthorized access.
+
+```mermaid
+classDiagram
+  direction LR
+  Client -- Proxy
+  Proxy -- Server
+```
+
+### Remote proxy
+
+Search for a location of a server that can provide the service.
+
+```mermaid
+classDiagram
+  direction LR
+  Client -- Proxy
+  Proxy -- Server
+
+  class Server {
+    +service1()
+    +service2()
+  }
+  class A {
+    +service1()
+    +service2()
+  }
+  class B {
+    +service1()
+    +service2()
+  }
+  Server <|-- A
+  Server <|-- B
+```
+
+## De-coupling pattern
+
+Introduce an intermediary to weaken coupling between modules.
+
+```mermaid
+classDiagram
+  direction LR
+  C1 -- Intermediate
+  Intermediate -- C2
 ```
