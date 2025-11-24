@@ -1,13 +1,3 @@
-<!-- KaTeX -->
-<script
-  type="text/javascript"
-  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-</script>
-<script
-  type="text/x-mathjax-config">
-  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
-</script>
-
 # [Homework 1](https://github.com/hanggrian/IIT-CS586/blob/assets/assignments/hw1_1.pdf)
 
 > For each solution:
@@ -23,8 +13,9 @@
 >     ```
 >
 >     When the EFSM model is "executed" on this sequence of operations, the
-      following sequence of transitions is traversed/executed: $T_1$, $T_2$,
-      $T_4$, $T_8$, $T_{15}$, $T_{18}$
+      following sequence of transitions is traversed/executed: T<sub>1</sub>,
+      T<sub>2</sub>, T<sub>4</sub>, T<sub>8</sub>, T<sub>15</sub>,
+      T<sub>18</sub>
 
 ## Problem 1
 
@@ -58,6 +49,7 @@
 >
 > ```mermaid
 > classDiagram
+>   direction TB
 >   class BookSystem {
 >     -List&lt;ISBN, price, num&gt;
 >     +setPrice()
@@ -332,68 +324,24 @@ sequenceDiagram
 > The ATM component supports the following operations:
 >
 > ```vb
-> create()                  'ATM is created'
-> card(integer x, string y) 'ATM card is inserted where x is a balance and y is a pin #'
-> pin(string x)             'provides pin #'
-> deposit(integer d)        'deposit amount d'
-> withdraw(integer w)       'withdraw amount w'
-> balance()                 'display the current balance'
-> lock(string x)            'lock the ATM, where x is a pin #'
-> unlock(string x)          'unlock the ATM, where x is pin #'
-> exit()                    'exit from the ATM'
+> create() 'ATM is created'
+> card(integer x, string y) 'ATM card is inserted where x is a balance and y '
+>   'is a pin #'
+> pin(string x) 'provides pin #'
+> deposit(integer d) 'deposit amount d'
+> withdraw(integer w) 'withdraw amount w'
+> balance() 'display the current balance'
+> lock(string x) 'lock the ATM, where x is a pin #'
+> unlock(string x) 'unlock the ATM, where x is pin #'
+> exit() 'exit from the ATM'
 > ```
 >
 > A simplified EFSM model for the ATM component is shown on the next page.
 >
-> ```mermaid
-> ---
-> config:
->   flowchart:
->     defaultRenderer: "elk"
-> ---
-> flowchart LR
->   Start -- T<sub>1</sub> --> Idle
->   Idle -- T<sub>2</sub> --> CheckPin[Check pin]
->   CheckPin -- T<sub>3</sub> --> Idle
->   CheckPin -- T<sub>4</sub> --> Ready
->   Ready -- T<sub>5</sub> --> Idle
->   CheckPin -- T<sub>6</sub> --> CheckPin
->   Ready -- T<sub>7</sub> --> Ready
->   Ready -- T<sub>8</sub> --> Ready
->   Ready -- T<sub>9</sub> --> Ready
->   Ready -- T<sub>10</sub> --> Locked
->   Locked -- T<sub>11</sub> --> Ready
->   Overdrawn -- T<sub>12</sub> --> Locked
->   Locked -- T<sub>13</sub> --> Overdrawn
->   Overdrawn -- T<sub>14</sub> --> Ready
->   Ready -- T<sub>15</sub> --> Overdrawn
->   Overdrawn -- T<sub>16</sub> --> Overdrawn
->   Overdrawn -- T<sub>17</sub> --> Overdrawn
->   Overdrawn -- T<sub>18</sub> --> Idle
->   CheckPin -- T<sub>19</sub> --> Overdrawn
-> ```
->
-> Step | Operation
-> ---: | ---
-> $T_1$ | `create()`
-> $T_2$ | `card(x, y) / b = x`<br>`pn = y`<br>`attempts = 0`
-> $T_3$ | `pin(x)[(x != pn) && (attempts == 3)] / eject card`
-> $T_4$ | `pin(x)[(x == pn) && (b >= 1000)] / display menu`
-> $T_5$ | `exit / eject card`
-> $T_6$ | `pin(x)[(x != pn) && (attempts < 3)] / attempts++`
-> $T_7$ | `withdraw(x)[b - w >= 1000] / b = b - w`
-> $T_8$ | `deposit(d) / b = b + d`
-> $T_9$ | `balance()`<br>`display balance b`
-> $T_{10}$ | `lock(x)[x == pn]`
-> $T_{11}$ | `unlock(x)[(x == pn) && (b >= 1000)]`
-> $T_{12}$ | `lock(x)[x == pn]`
-> $T_{13}$ | `unlock(x)[(x == pn) && (b < 1000)]`
-> $T_{14}$ | `deposit(d)[b + d >= 1000] / b = b + d`
-> $T_{15}$ | `withdraw(w)[(b - w < 1000) && (b - w > 0)] / b = b - w - 10`
-> $T_{16}$ | `balance / display balance b`
-> $T_{17}$ | `deposit(d)[b + d < 1000] / b = b + d - 10`
-> $T_{18}$ | `exit / eject card`
-> $T_{19}$ | `pin(x)[(x == pn) && (b < 1000)] / display menu`
+> <img
+>   width="100%"
+>   alt="Diagram 2.1"
+>   src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw1/diagram2_1.svg"/>
 >
 > A simplified EFSM model for the *ATM* component is shown on the next page.
 >
@@ -411,8 +359,8 @@ sequenceDiagram
 
 <img
   width="100%"
-  alt="Diagram 2.1.1"
-  src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw1/diagram2_1_1.svg"/>
+  alt="Diagram 2.2.1"
+  src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw1/diagram2_2_1.svg"/>
 
 #### Pseudo-code
 
@@ -627,8 +575,8 @@ class LockedState implements State {
 
 <img
   width="100%"
-  alt="Diagram 2.1.2"
-  src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw1/diagram2_1_2.svg"/>
+  alt="Diagram 2.2.2"
+  src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw1/diagram2_2_2.svg"/>
 
 ### Centralized version
 
@@ -636,8 +584,8 @@ class LockedState implements State {
 
 <img
   width="100%"
-  alt="Diagram 2.2.1"
-  src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw1/diagram2_2_1.svg"/>
+  alt="Diagram 2.3.1"
+  src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw1/diagram2_3_1.svg"/>
 
 #### Pseudo-code
 
@@ -665,51 +613,56 @@ class Atm {
 
   void create() {
     currentState.create()
-    IF currentState.getStateId() == 0 THEN
+    IF currentState.getStateId() != 0 THEN
       currentState <- states[1]
     END IF
+    RETURN
   }
 
   void card(double x, string y) {
     currentState.card(x, y)
-    IF currentState.getStateId() == 1 THEN
-      currentState <- states[2]
+    IF currentState.getStateId() != 1 THEN
+      RETURN
     END IF
+    currentState <- states[2]
   }
 
   void pin(string x) {
     integer attempts <- login.attempts
     currentState.pin(x)
-    IF currentState.getStateId() == 2 THEN
-      IF x != login.pn AND attempts == 3 THEN
-        currentState <- states[1]
-      ELSE IF x == login.pn AND login.b >= 1000 THEN
-        currentState <- states[3]
-      ELSE IF x == login.pn AND login.b < 1000 THEN
-        currentState <- states[4]
-      END IF
+    IF currentState.getStateId() != 2 THEN
+      RETURN
+    END IF
+    IF x != login.pn AND attempts == 3 THEN
+      currentState <- states[1]
+    ELSE IF x == login.pn AND login.b >= 1000 THEN
+      currentState <- states[3]
+    ELSE IF x == login.pn AND login.b < 1000 THEN
+      currentState <- states[4]
     END IF
   }
 
   void deposit(double d) {
     double temp = login.b
     currentState.deposit(d)
-    IF currentState.getStateId() == 4 THEN
-      IF temp + d >= 1000 THEN
-        currentState <- states[3]
-      END IF
+    IF currentState.getStateId() != 4 THEN
+      RETURN
+    END IF
+    IF temp + d >= 1000 THEN
+      currentState <- states[3]
     END IF
   }
 
   void withdraw(double w) {
     double temp = login.b
     currentState.withdraw(w)
-    IF currentState.getStateId() == 3 THEN
-      IF temp - w < 1000 AND temp - w > 0 THEN
-        currentState <- states[4]
-      ELSE IF temp - w >= 1000 THEN
-        // no change
-      END IF
+    IF currentState.getStateId() != 3 THEN
+      RETURN
+    END IF
+    IF temp - w < 1000 AND temp - w > 0 THEN
+      currentState <- states[4]
+    ELSE IF temp - w >= 1000 THEN
+      'no change'
     END IF
   }
 
@@ -719,29 +672,32 @@ class Atm {
 
   void lock(string x) {
     currentState.lock(x)
-    IF currentState.getStateId() == 3 OR currentState.getStateId() == 4 THEN
-      IF x == login.pn THEN
-        currentState <- states[5]
-      END IF
+    IF currentState.getStateId() != 3 AND currentState.getStateId() != 4 THEN
+      RETURN
+    END IF
+    IF x == login.pn THEN
+      currentState <- states[5]
     END IF
   }
 
   void unlock(string x) {
     currentState.unlock(x)
-    IF currentState.getStateId() == 5 THEN
-      IF x == login.pn AND login.b >= 1000 THEN
-        currentState <- states[3]
-      ELSE IF x == login.pn AND login.b < 1000 THEN
-        currentState <- states[4]
-      END IF
+    IF currentState.getStateId() != 5 THEN
+      RETURN
+    END IF
+    IF x == login.pn AND login.b >= 1000 THEN
+      currentState <- states[3]
+    ELSE IF x == login.pn AND login.b < 1000 THEN
+      currentState <- states[4]
     END IF
   }
 
   void exit() {
     currentState.exit()
-    IF currentState.getStateId() == 3 OR currentState.getStateId() == 4 THEN
-      currentState <- states[1]
+    IF currentState.getStateId() != 3 AND currentState.getStateId() != 4 THEN
+      RETURN
     END IF
+    currentState <- states[1]
   }
 }
 
@@ -897,5 +853,5 @@ class LockedState implements State {
 
 <img
   width="100%"
-  alt="Diagram 2.2.2"
-  src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw1/diagram2_2_2.svg"/>
+  alt="Diagram 2.3.2"
+  src="https://github.com/hanggrian/IIT-CS586/raw/assets/assignments/hw1/diagram2_3_2.svg"/>

@@ -1,0 +1,35 @@
+classDiagram
+  direction LR
+  class AbstractGasPumpFactory {
+    <<abstract>>
+    +getDataStore() DataStore
+    +getDisplayMenu() DisplayMenu
+    +getPayMsg() PayMsg
+    +getRejectMsg() RejectMsg
+    +getCancelMsg() CancelMsg
+    +getEnterPinMsg() EnterPinMsg
+    +getWrongPinMsg() WrongPinMsg
+    +getStopMsg() StopMsg
+  }
+  class GasPump1Factory {
+    +getDataStore() DataStore1
+    +getDisplayMenu() DisplayMenu1
+    +getPayMsg() PayMsg1
+    +getRejectMsg() RejectMsg1
+    +getCancelMsg() CancelMsg1
+    +getEnterPinMsg() EnterPinMsg1
+    +getWrongPinMsg() WrongPinMsg1
+    +getStopMsg() StopMsg1
+  }
+  class GasPump2Factory {
+    +getDataStore() DataStore2
+    +getDisplayMenu() DisplayMenu2
+    +getPayMsg() PayMsg2
+    +getRejectMsg() RejectMsg2
+    +getCancelMsg() CancelMsg2
+    +getEnterPinMsg() EnterPinMsg2
+    +getWrongPinMsg() WrongPinMsg2
+    +getStopMsg() StopMsg2
+  }
+  AbstractGasPumpFactory <|-- GasPump1Factory
+  AbstractGasPumpFactory <|-- GasPump2Factory

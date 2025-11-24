@@ -1,0 +1,45 @@
+classDiagram
+  direction LR
+  class State {
+    <<abstract>>
+    -processor : OutputProcessor
+    -efsm : MdaEfsm
+    -stateId : integer
+    +getStateId() integer
+  }
+  class Start {
+    +activate() void
+  }
+  class S0 {
+    +start() void
+  }
+  class S1 {
+    +setPaymentType(t : integer) void
+  }
+  class S2 {
+    +approved() void
+    +rejected() void
+  }
+  class S3 {
+    +cancel() void
+    +setGasType(t : integer) void
+  }
+  class S4 {
+    +startPump() void
+  }
+  class S5 {
+    +pump() void
+    +stopPump() void
+    +fullTank() void
+  }
+  class S6 {
+    +pin(p : integer) void
+  }
+  State <|-- Start
+  State <|-- S0
+  State <|-- S1
+  State <|-- S2
+  State <|-- S3
+  State <|-- S4
+  State <|-- S5
+  State <|-- S6

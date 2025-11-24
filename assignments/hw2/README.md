@@ -1,13 +1,3 @@
-<!-- KaTeX -->
-<script
-  type="text/javascript"
-  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-</script>
-<script
-  type="text/x-mathjax-config">
-  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
-</script>
-
 # [Homework 2](https://github.com/hanggrian/IIT-CS586/blob/assets/assignments/hw2_1.pdf)
 
 ## Problem 1

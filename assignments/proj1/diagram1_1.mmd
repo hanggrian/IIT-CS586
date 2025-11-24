@@ -1,0 +1,22 @@
+---
+config:
+  flowchart:
+    defaultRenderer: "elk"
+---
+flowchart TB
+  Start(Start) -- activate(a)[a > 0] / price = a --> S0
+
+  S0[S<sub>0</sub>] -- start() / payMsg() --> S1
+
+  S1[S<sub>1</sub>] -- payCredit() --> S2
+  S1 -- payCash(c)[c > 0] / cash = c;<br>w = 0;<br>displayMenu() --> S3
+
+  S2[S<sub>2</sub>] -- reject() / rejectMsg() --> S0
+  S2 -- approved() / w = 1;<br>displayMenu();<br>ejectCard() --> S3
+
+  S3[S<sub>3</sub>] -- cancel() / cancelMsg() --> S0
+  S3 -- startPump() / L = 0;<br>total = 0 --> S4
+
+  S4[S<sub>4</sub>] -- stopPump() / printReceipt(total) --> S0
+  S4 -- pumpLiter()[w == 0 && (cash < price * (L + 1))] / printReceipt(total) --> S0
+  S4 -- pumpLiter()[w == 1 || ((w == 0) && (cash >= price * (L + 1)))] / L = L + 1;<br>total = price * L;<br>display(L) --> S4

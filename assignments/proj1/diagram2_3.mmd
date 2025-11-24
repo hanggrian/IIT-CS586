@@ -1,0 +1,56 @@
+classDiagram
+  direction LR
+  class OutputProcessor {
+    -data : Data
+    -factory : AbstractGasPumpFactory
+    +displayMenu() void
+    +payMsg() void
+    +rejectMsg() void
+    +cancelMsg() void
+    +enterPinMsg() void
+    +wrongPinMsg() void
+    +stopMsg() void
+  }
+  class DisplayMenu {
+    +displayMenu(data : Data) void
+  }
+  class PayMsg {
+    +payMsg(data : Data) void
+  }
+  class RejectMsg {
+    +rejectMsg(data : Data) void
+  }
+  class CancelMsg {
+    +cancelMsg(data : Data) void
+  }
+  class EnterPinMsg {
+    +enterPinMsg(data : Data) void
+  }
+  class WrongPinMsg {
+    +wrongPinMsg(data : Data) void
+  }
+  class StopMsg {
+    +stopMsg(data : Data) void
+  }
+  DisplayMenu -- OutputProcessor
+  PayMsg -- OutputProcessor
+  RejectMsg -- OutputProcessor
+  CancelMsg -- OutputProcessor
+  EnterPinMsg -- OutputProcessor
+  WrongPinMsg -- OutputProcessor
+  StopMsg -- OutputProcessor
+
+  DisplayMenu1 --|> DisplayMenu
+  DisplayMenu2 --|> DisplayMenu
+  PayMsg1 --|> PayMsg
+  PayMsg2 --|> PayMsg
+  RejectMsg1 --|> RejectMsg
+  RejectMsg2 --|> RejectMsg
+  CancelMsg1 --|> CancelMsg
+  CancelMsg2 --|> CancelMsg
+  EnterPinMsg1 --|> EnterPinMsg
+  EnterPinMsg2 --|> EnterPinMsg
+  WrongPinMsg1 --|> WrongPinMsg
+  WrongPinMsg2 --|> WrongPinMsg
+  StopMsg1 --|> StopMsg
+  StopMsg2 --|> StopMsg

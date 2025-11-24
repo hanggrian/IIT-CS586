@@ -1,0 +1,25 @@
+---
+config:
+  flowchart:
+    defaultRenderer: "elk"
+---
+flowchart LR
+  Start(Start) -- create() --> Idle
+  Idle -- card(x, y) / b = x;<br>pn = y;<br>attempts = 0 --> CheckPin[Check pin]
+  CheckPin -- pin(x)[x != pn && attempts == 3] / eject card --> Idle
+  CheckPin -- pin(x)[x == pn && b >= 1000] / display menu --> Ready
+  Ready -- exit / eject card --> Idle
+  CheckPin -- pin(x)[x != pn && attempts < 3] / attempts++ --> CheckPin
+  Ready -- withdraw(x)[b - w >= 1000] / b = b - w --> Ready
+  Ready -- deposit(d) / b = b + d --> Ready
+  Ready -- balance();<br>display balance b --> Ready
+  Ready -- lock(x)[x == pn] --> Locked
+  Locked -- unlock(x)[x == pn && b >= 1000] --> Ready
+  Overdrawn -- lock(x)[x == pn] --> Locked
+  Locked -- unlock(x)[x == pn && b < 1000] --> Overdrawn
+  Overdrawn -- deposit(d)[b + d >= 1000] / b = b + d --> Ready
+  Ready -- withdraw(w)[b - w < 1000 && b - w > 0] / b = b - w - 10 --> Overdrawn
+  Overdrawn -- balance / display balance b --> Overdrawn
+  Overdrawn -- deposit(d)[b + d < 1000] / b = b + d - 10 --> Overdrawn
+  Overdrawn -- exit / eject card --> Idle
+  CheckPin -- pin(x)[x == pn && b < 1000] / display menu --> Overdrawn

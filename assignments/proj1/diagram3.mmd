@@ -1,0 +1,28 @@
+---
+config:
+  flowchart:
+    defaultRenderer: "elk"
+---
+flowchart TB
+  Start(Start) -- activate() / storePrices() --> S0
+
+  S0[S<sub>0</sub>] -- start() / payMsg() --> S1
+
+  S1[S<sub>1</sub>] -- setPaymentType(t)[t == 1] --> S2
+  S1 -- setPaymentType(t)[t == 2] / storeCash();<br>displayMenu() --> S3
+
+  S2[S<sub>2</sub>] -- reject() / rejectMsg() --> S0
+  S2 -- approved() / displayMenu() --> S3
+
+  S3[S<sub>3</sub>] -- cancel() / cancelMsg();<br>returnCash() --> S0
+  S3 -- setGasType(g) / setPrice(g) --> S4
+
+  S4[S<sub>4</sub>] -- startPump() / resetCounter();<br>readyMsg() --> S5
+
+  S5[S<sub>5</sub>] -- pump() / pumpGasUnit();<br>gasPumpedMsg() --> S5
+  S5 -- stopPump() / printReceipt(); stopMsg() --> S0
+  S5 -- fullTank() / printReceipt(); stopMsg() --> S0
+
+  S1 -- setPaymentType(t)[t == 3] / storePin();<br>enterPinMsg() --> S6[S<sub>6</sub>]
+  S6 -- pin(x)[x != pn && k <= 1] / wrongPinMsg() --> S0
+  S6 -- pin(x)[x == pn] / displayMenu() --> S3

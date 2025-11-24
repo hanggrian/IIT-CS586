@@ -1,0 +1,28 @@
+---
+config:
+  flowchart:
+    defaultRenderer: "elk"
+---
+flowchart TB
+  Start(Start) -- activate(a, b)[(a > 0) && (b > 0)] / Rprice = a;<br>Dprice = b --> S0
+
+  S0[S<sub>0</sub>] -- start() / payMsg();<br>price = 0 --> S1
+
+  S1[S<sub>1</sub>] -- payCredit() --> S2
+  S1 -- payDebit(p) / enterPinMsg();<br>pin = p;<br>k = 0 --> S7
+
+  S2[S<sub>2</sub>] -- reject() / rejectMsg() --> S0
+  S2 -- approved() / displayMenu();<br>ejectCard() --> S3
+
+  S3[S<sub>3</sub>] -- cancel() / cancelMsg() --> S0
+  S3 -- regular() / price = Rprice --> S3
+  S3 -- diesel() / price = Dprice --> S3
+  S3 -- startPump()[price > 0] / G = 0;<br>total = 0 --> S5
+
+  S5[S<sub>5</sub>] -- fullTank() / printReceipt(G, total) --> S0
+  S5 -- stopPump() / printReceipt(G, total) --> S0
+  S5 -- pumpGallon() / G = G + 1;<br>total = price * G;<br>display(G), total --> S5
+
+  S7[S<sub>7</sub>] -- pin(x)[x != pin && (k > 1)] / wrongPinMsg();<br>ejectCard() --> S0
+  S7 -- pin(x)[x == pin] / displayMenu();<br>ejectCard() --> S3
+  S7 -- pin(x)[x != pin && k <= 1] / wrongPinMsg();<br>k = k + 1 --> S7

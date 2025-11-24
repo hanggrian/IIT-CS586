@@ -1,0 +1,22 @@
+classDiagram
+  direction LR
+  class Data {
+    <<abstract>>
+    +total : float
+  }
+  class Data1 {
+    +literPrice : float
+    +literCount : integer
+    +isCash : boolean
+    +cash : float
+  }
+  class Data2 {
+    +gallonDieselPrice : integer
+    +gallonRegularPrice : integer
+    +gallonCount : integer
+    +pin : integer
+    +dieselCount : integer
+    +regularCount : integer
+  }
+  Data1 --|> Data
+  Data2 --|> Data
