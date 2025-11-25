@@ -1,0 +1,53 @@
+classDiagram
+  direction TB
+  class CriticalPartMonitor {
+    -facade : InventoryFacade
+    -criticalParts : Map<string, integer>
+    -criticalBuffer : Map<string, integer>
+    +addPart(p : string, w : string) void
+    +removePart(p : string, w : string) void
+    +getNumOfParts(p) integer
+    +isPart(p : string) integer
+    +registerCriticalPart(p : string, minLevel : integer) void
+    +unregisterCriticalPart(p : string) void
+    +showCriticalParts() void
+  }
+  note for CriticalPartMonitor "Layer 4"
+
+  class InventoryFacade {
+    -adapter : InventoryAdapter
+    +addPart(p : string, w : string) void
+    +removePart(p : string, w : string) void
+    +getNumOfParts(p) integer
+    +isPart(p : string) integer
+  }
+  CriticalPartMonitor -- InventoryFacade
+  note for InventoryFacade "Layer 3"
+
+  class InventoryAdapter {
+    -s1 : ServerS1
+    -s2 : ServerS2
+    +addPart(p : string, w : string) void
+    +removePart(p : string, w : string) void
+    +getNumOfParts(p : string) integer
+    +isPart(p : string) integer
+  }
+  InventoryFacade -- InventoryAdapter
+  note for InventoryAdapter "Layer 2"
+
+  class ServerS1 {
+    +insertPart(p : string, w : string) void
+    +removePart(p : string, w : string) void
+    +getNumOfParts(p : string) integer
+    +isPart(p : string) integer
+  }
+  class ServerS2 {
+    +addPart(w : string, p : string) void
+    +deletePart(w : string, p : string) void
+    +getNumParts(p : string) integer
+    +isPart(p : string) integer
+  }
+  InventoryAdapter -- ServerS1
+  InventoryAdapter -- ServerS2
+  note for ServerS1 "Layer 1"
+  note for ServerS2 "Layer 1"

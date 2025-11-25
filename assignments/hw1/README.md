@@ -91,7 +91,7 @@
 ### Class diagram
 
 There are simple data classes `Book` and `PriceObservation` that are used in the
-system’s data structure. The implementation of the observer pattern is decoupled
+system's data structure. The implementation of the observer pattern is decoupled
 in a separate class, `PriceObserver`. To share the same attributes, an interface
 `Notifiable` is shared among user components to listen for out-of-range price
 changes made in the system.
@@ -162,7 +162,7 @@ class BookSystem {
       books[isbn] <- b
       RETURN
     END IF
-    Book b2
+    Book b2 <- new Book()
     b2.price <- MAX_VALUE
     b2.num <- 1
     books[isbn] <- b2
@@ -194,7 +194,7 @@ class PriceObserver {
 
   'List user observations of any book.'
   PriceObservation[*] listObservations(string isbn, Notifiable user) {
-    PriceObservation[*] result
+    PriceObservation[*] result <- new PriceObservation[*]()
     FOR (string isbn, PriceObservation[*] os) IN observations THEN
       FOR PriceObservation o IN os THEN
         IF o.user == user THEN

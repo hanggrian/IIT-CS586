@@ -1,0 +1,28 @@
+classDiagram
+  direction LR
+  class Unique {
+    +unique()
+  }
+  class Unique_1 {
+    +unique()
+  }
+  class Unique_2 {
+    +unique()
+  }
+  class Unique_3 {
+    +unique()
+  }
+  Unique <|-- Unique_1
+  Unique <|-- Unique_2
+  Unique <|-- Unique_3
+
+  class RemoveDuplicates {
+    -unique : Unique
+    -test : AcceptanceTest
+    +unique(in integer n, integer low, integer high, integer[] L, out integer[] SL, integer m) void
+  }
+  class AcceptanceTest {
+    +test(in integer n, integer[] L, out integer m, integer[] SL) void
+  }
+  RemoveDuplicates -- Unique
+  RemoveDuplicates -- AcceptanceTest

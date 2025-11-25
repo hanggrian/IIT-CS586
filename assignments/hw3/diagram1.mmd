@@ -1,0 +1,58 @@
+sequenceDiagram
+  actor User
+  participant Filter1
+  participant Filter2
+  participant Filter3
+  participant Filter4
+  participant Filter5
+  participant Filter6
+  participant Filter7
+  participant Filter8
+  participant Filter9
+
+  User ->> Filter2 : readCorrectAnswers()
+  activate Filter2
+  Filter2 ->> Filter3 : writeCorrectAnswer(CA)
+  activate Filter3
+  deactivate Filter3
+  Filter3 -->> Filter2 :
+  Filter2 -->> User :
+  deactivate Filter2
+
+  User ->> Filter7 : readStudentNames()
+  activate Filter7
+  Filter7 ->> Filter6 : writeStudents(SNI)
+  activate Filter6
+  deactivate Filter6
+  Filter6 -->> Filter7 :
+  Filter7 -->> User :
+  deactivate Filter7
+
+  User ->> Filter1 : readAnswers()
+  activate Filter1
+  Filter1 ->> Filter3 : calculateGrades(A)
+  activate Filter3
+  Filter3 ->> Filter5 : calculateGradeStatistics(G)
+  activate Filter5
+  Filter5 ->> Filter9 : reportGradeStatistics(GS)
+  activate Filter9
+  deactivate Filter9
+  Filter9 -->> Filter5 :
+  Filter5 -->> Filter3 :
+  deactivate Filter5
+  Filter3 ->> Filter6 : mapNamesToGrades(SGI)
+  activate Filter6
+  Filter6 ->> Filter8 : sortGradesDescending(SNG)
+  activate Filter8
+  Filter8 ->> Filter4 : printGrades(SNGD)
+  activate Filter4
+  deactivate Filter4
+  Filter4 -->> Filter8 :
+  Filter8 -->> Filter6 :
+  deactivate Filter8
+  Filter6 -->> Filter3 :
+  deactivate Filter6
+  Filter3 -->> Filter1 :
+  deactivate Filter3
+  Filter1 -->> User :
+  deactivate Filter1

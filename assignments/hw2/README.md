@@ -90,7 +90,7 @@ class ClientAProxy {
   Broker broker
 
   void service1(string s, integer i1, integer i2) {
-    Request request
+    Request request <- new Request()
     request.operation <- "void service1(string, int, int)"
     request.s <- s
     request.i1 <- i1
@@ -99,7 +99,7 @@ class ClientAProxy {
   }
 
   void service2(string s, integer i) {
-    Request request
+    Request request <- new Request()
     request.operation <- "void service2(string, int)"
     request.s <- s
     request.i1 <- i
@@ -107,7 +107,7 @@ class ClientAProxy {
   }
 
   integer service3(string s) {
-    Request request
+    Request request <- new Request()
     request.operation <- "int service3(string)"
     request.s <- s
     broker.forwardServer(request)
@@ -115,7 +115,7 @@ class ClientAProxy {
   }
 
   float service4(string s) {
-    Request request
+    Request request <- new Request()
     request.operation <- "float service4(string)"
     request.s <- s
     broker.forwardServer(request)
@@ -571,25 +571,21 @@ interface AbstractFactory {
 
 class AbstractFactoryA implements AbstractFactory {
   Sort getSort() {
-    HeapSort sort
-    RETURN sort
+    RETURN new HeapSort()
   }
 
   Search getSearch() {
-    BinarySearch search
-    RETURN search
+    RETURN new BinarySearch()
   }
 }
 
 class AbstractFactoryB implements AbstractFactory {
   Sort getSort() {
-    MergeSort sort
-    RETURN sort
+    RETURN new MergeSort()
   }
 
   Search getSearch() {
-    LinearSearch search
-    RETURN search
+    RETURN new LinearSearch()
   }
 }
 ```

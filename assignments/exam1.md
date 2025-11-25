@@ -272,7 +272,7 @@ sequenceDiagram
 > In the system there exists a class *Timer* whose object stores and maintains
   the time of a day. This class supports the following operations: `Tick()`,
   `GetHour()`, and `GetMinute()`. The `Tick()` operation is called by an
-  internal timer every 1 second. `Tick()` operation updates the *Timer’s*
+  internal timer every 1 second. `Tick()` operation updates the *Timer's*
   internal state (time data structure). Operations `GetHour()` and `GetMinute()`
   provide the interface for retrieving individual time units such as an hour and
   a minute.

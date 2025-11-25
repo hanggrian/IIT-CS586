@@ -1,0 +1,28 @@
+classDiagram
+  direction LR
+  class Unique {
+    +unique()
+  }
+  class Unique_1 {
+    +unique()
+  }
+  class Unique_2 {
+    +unique()
+  }
+  class Unique_3 {
+    +unique()
+  }
+  Unique <|-- Unique_1
+  Unique <|-- Unique_2
+  Unique <|-- Unique_3
+
+  class RemoveDuplicates {
+    -unique : Unique
+    -validator : Validator
+    +unique(integer n, integer low, integer high, integer[] L) Pair~integer[], integer~
+  }
+  class Validator {
+    +validate(Pair~integer, integer[]~[] LSL) Pair~integer, integer[]~
+  }
+  RemoveDuplicates -- Unique
+  RemoveDuplicates -- Validator

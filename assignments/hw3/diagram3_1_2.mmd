@@ -1,0 +1,34 @@
+sequenceDiagram
+  actor Client
+  participant RemoveDuplicates
+  participant Validator
+  participant Unique_1
+  participant Unique_2
+  participant Unique_3
+
+  Client ->> RemoveDuplicates : unique(<br>n=8,<br>low=2,<br>high=6,<br>L=[1, 7, 1, 2, 5, 2, 7, 5]<br>)
+  activate RemoveDuplicates
+  RemoveDuplicates ->> Unique_1 : unique(n, low, high, L)
+  activate Unique_1
+  Unique_1 -->> RemoveDuplicates : m, SL
+  deactivate Unique_1
+  note over RemoveDuplicates : LSL[0] = new Pair(m, SL)
+
+  RemoveDuplicates ->> Unique_2 : unique(n, low, high, L)
+  activate Unique_2
+  Unique_2 -->> RemoveDuplicates : m, SL
+  deactivate Unique_2
+  note over RemoveDuplicates : LSL[1] = new Pair(m, SL)
+
+  RemoveDuplicates ->> Unique_3 : unique(n, low, high, L)
+  activate Unique_3
+  Unique_3 -->> RemoveDuplicates : m, SL
+  deactivate Unique_3
+  note over RemoveDuplicates : LSL[2] = new Pair(m, SL)
+
+  RemoveDuplicates ->> Validator : validate(LSL)
+  activate Validator
+  Validator -->> RemoveDuplicates : m, SL
+  deactivate Validator
+  RemoveDuplicates -->> Client : m=6<br>SL=[1, 7, 1, 2, 5, 7]
+  deactivate RemoveDuplicates
