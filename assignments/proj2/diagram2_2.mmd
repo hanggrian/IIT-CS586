@@ -1,0 +1,71 @@
+classDiagram
+  direction LR
+  class OutputProcessor {
+    -dataStore : DataStore
+    -abstractFactory : AbstractGasPumpFactory
+    +storePrices()
+    +storeCash()
+    +storePin()
+    +displayMenu()
+    +payMsg()
+    +rejectMsg()
+    +cancelMsg()
+    +gasPumpedMsg()
+    +enterPinMsg()
+    +wrongPinMsg()
+    +resetCounterMsg()
+    +stopPumpMsg()
+    +setPrice(int)
+    +resetCounter()
+    +pumpGasUnit()
+    +printReceipt()
+    +returnCash()
+    +initializeData()
+    +ejectCard()
+    +setCash(boolean)
+  }
+  class StorePrices {
+    +storePrices(dataStore: DataStore)
+  }
+  class StoreCash {
+    +storeCash(dataStore: DataStore)
+  }
+  StorePrices -- OutputProcessor
+  StoreCash -- OutputProcessor
+
+  class DisplayMenu {
+    +displayMenu()
+  }
+  class PayMsg {
+    +payMsg()
+  }
+  class RejectMsg {
+    +rejectMsg()
+  }
+  class CancelMsg {
+    +cancelMsg()
+  }
+  class GasPumpedMsg {
+    +gasPumpedMsg()
+  }
+  class EnterPinMsg {
+    +enterPinMsg()
+  }
+  class WrongPinMsg {
+    +wrongPinMsg()
+  }
+  class ResetCounterMsg {
+    +resetCounterMsg()
+  }
+  class StopPumpMsg {
+    +stopPumpMsg()
+  }
+  OutputProcessor -- DisplayMenu
+  OutputProcessor -- PayMsg
+  OutputProcessor -- RejectMsg
+  OutputProcessor -- CancelMsg
+  OutputProcessor -- GasPumpedMsg
+  OutputProcessor -- EnterPinMsg
+  OutputProcessor -- WrongPinMsg
+  OutputProcessor -- ResetCounterMsg
+  OutputProcessor -- StopPumpMsg

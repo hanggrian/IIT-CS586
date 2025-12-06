@@ -1,0 +1,286 @@
+sequenceDiagram
+  actor User
+  participant GasPump2
+  participant GasPumpFactory2
+  participant DataStore2
+  participant MdaEfsm
+  participant Start
+  participant S0
+  participant S1
+  participant S2
+  participant S3
+  participant S8
+  participant S5
+  participant OutputProcessor
+  participant StorePrices2
+  participant StoreCash2
+  participant DisplayMenu2
+  participant PayMsg2
+  participant SetPrice2
+  participant EnterPinMsg2
+  participant WrongPinMsg2
+  participant GasPumpedMsg2
+  participant PrintReceiptMsg2
+
+  User ->> GasPump2 : activate(4, 7)
+  activate GasPump2
+  GasPump2 ->> GasPumpFactory2 : getDataStore()
+  activate GasPumpFactory2
+  GasPumpFactory2 -->> GasPump2 : DataStore2
+  GasPumpFactory2 ->> DataStore2 : create DataStore2
+  activate DataStore2
+  note over DataStore2 : tempA = 4<br>tempB = 7
+  DataStore2 -->> GasPump2 :
+  GasPump2 ->> MdaEfsm : activate()
+  activate MdaEfsm
+  MdaEfsm ->> Start : activate()
+  deactivate MdaEfsm
+  activate Start
+  Start ->> OutputProcessor : storePrices()
+  deactivate Start
+  activate OutputProcessor
+  OutputProcessor ->> GasPumpFactory2 : getStorePrices()
+  GasPumpFactory2 -->> OutputProcessor : StorePrices2
+  deactivate GasPumpFactory2
+  OutputProcessor ->> StorePrices2 : storePrices(DataStore2)
+  activate StorePrices2
+  StorePrices2 ->> DataStore2 : get tempA
+  DataStore2 -->> StorePrices2 : 4
+  StorePrices2 ->> DataStore2 : regularPrice = 4
+  note over DataStore2 : regularPrice = 4
+  DataStore2 -->> StorePrices2 :
+  StorePrices2 ->> DataStore2 : get tempB
+  DataStore2 -->> StorePrices2 : 7
+  StorePrices2 ->> DataStore2 : dieselPrice = 7
+  note over DataStore2 : dieselPrice = 7
+  DataStore2 -->> StorePrices2 :
+  deactivate DataStore2
+  StorePrices2 -->> OutputProcessor :
+  deactivate StorePrices2
+  OutputProcessor -->> GasPump2 :
+  deactivate OutputProcessor
+  GasPump2 -->> User :
+  deactivate GasPump2
+
+  User ->> GasPump2 : start()
+  activate GasPump2
+  GasPump2 ->> MdaEfsm : start()
+  activate MdaEfsm
+  MdaEfsm ->> S0 : start()
+  activate S0
+  S0 ->> OutputProcessor : start()
+  activate OutputProcessor
+  OutputProcessor ->> GasPumpFactory2 : getPayMsg()
+  activate GasPumpFactory2
+  GasPumpFactory2 -->> OutputProcessor : PayMsg2
+  deactivate GasPumpFactory2
+  OutputProcessor ->> PayMsg2 : payMsg()
+  activate PayMsg2
+  deactivate PayMsg2
+  PayMsg2 -->> OutputProcessor :
+  OutputProcessor -->> S0 :
+  deactivate OutputProcessor
+  S0 -->> MdaEfsm :
+  deactivate S0
+  MdaEfsm -->> GasPump2 :
+  deactivate MdaEfsm
+  GasPump2 -->> User :
+  deactivate GasPump2
+
+  User ->> GasPump2 : payDebit(123)
+  activate GasPump2
+  GasPump2 ->> DataStore2 : tempP = 123
+  activate DataStore2
+  note over DataStore2 : tempP = 123
+  DataStore2 -->> GasPump2 :
+  GasPump2 ->> MdaEfsm : payDebit()
+  activate MdaEfsm
+  MdaEfsm ->> S1 : payDebit()
+  activate S1
+  S1 ->> OutputProcessor : storePin()
+  activate OutputProcessor
+  OutputProcessor ->> GasPumpFactory2 : getStoreCash()
+  activate GasPumpFactory2
+  GasPumpFactory2 -->> OutputProcessor : StoreCash2
+  OutputProcessor ->> StoreCash2 : storePin(DataStore2)
+  activate StoreCash2
+  StoreCash2 ->> DataStore2 : get tempP
+  DataStore2 -->> StoreCash2 : 123
+  StoreCash2 ->> DataStore2 : pin = 123
+  note over DataStore2 : pin = 123
+  DataStore2 -->> StoreCash2 :
+  deactivate DataStore2
+  StoreCash2 -->> OutputProcessor :
+  deactivate StoreCash2
+  OutputProcessor ->> GasPumpFactory2 : getEnterPinMsg()
+  GasPumpFactory2 -->> OutputProcessor : EnterPinMsg2
+  deactivate GasPumpFactory2
+  OutputProcessor ->> EnterPinMsg2 : enterPinMsg()
+  activate EnterPinMsg2
+  deactivate EnterPinMsg2
+  EnterPinMsg2 -->> OutputProcessor :
+  OutputProcessor -->> S1 :
+  deactivate OutputProcessor
+  S1 -->> MdaEfsm :
+  deactivate S1
+  MdaEfsm -->> GasPump2 :
+  deactivate MdaEfsm
+  GasPump2 -->> User :
+  deactivate GasPump2
+
+  User ->> GasPump2 : pin(124)
+  activate GasPump2
+  GasPump2 ->> MdaEfsm : incorrectPin(1)
+  activate MdaEfsm
+  MdaEfsm ->> S8 : incorrectPin(1)
+  activate S8
+  S8 ->> OutputProcessor : wrongPinMsg()
+  activate OutputProcessor
+  OutputProcessor ->> GasPumpFactory2 : getWrongPinMsg()
+  activate GasPumpFactory2
+  GasPumpFactory2 -->> OutputProcessor : WrongPinMsg2
+  deactivate GasPumpFactory2
+  OutputProcessor ->> WrongPinMsg2 : wrongPinMsg()
+  activate WrongPinMsg2
+  deactivate WrongPinMsg2
+  WrongPinMsg2 -->> OutputProcessor :
+  OutputProcessor -->> S8 :
+  deactivate OutputProcessor
+  S8 -->> MdaEfsm :
+  deactivate S8
+  MdaEfsm -->> GasPump2 :
+  deactivate MdaEfsm
+  GasPump2 -->> User :
+  deactivate GasPump2
+
+  User ->> GasPump2 : pin(123)
+  activate GasPump2
+  GasPump2 ->> MdaEfsm : correctPin()
+  activate MdaEfsm
+  MdaEfsm ->> S8 : correctPin()
+  activate S8
+  S8 ->> OutputProcessor : displayMenu()
+  activate OutputProcessor
+  OutputProcessor ->> GasPumpFactory2 : getDisplayMenu()
+  activate GasPumpFactory2
+  GasPumpFactory2 -->> OutputProcessor : DisplayMenu2
+  deactivate GasPumpFactory2
+  OutputProcessor ->> DisplayMenu2 : displayMenu()
+  activate DisplayMenu2
+  deactivate DisplayMenu2
+  DisplayMenu2 -->> OutputProcessor :
+  OutputProcessor -->> S8 :
+  deactivate OutputProcessor
+  S8 -->> MdaEfsm :
+  deactivate S8
+  MdaEfsm -->> GasPump2 :
+  deactivate MdaEfsm
+  GasPump2 -->> User :
+  deactivate GasPump2
+
+  User ->> GasPump2 : regular()
+  activate GasPump2
+  GasPump2 ->> S3 : selectGas(2)
+  activate S3
+  S3 ->> OutputProcessor : setPrice(2)
+  activate OutputProcessor
+  OutputProcessor ->> GasPumpFactory2 : getGasPrice()
+  activate GasPumpFactory2
+  GasPumpFactory2 -->> OutputProcessor : gas price
+  deactivate GasPumpFactory2
+  OutputProcessor ->> SetPrice2 : setPrice(2)
+  activate SetPrice2
+  deactivate SetPrice2
+  SetPrice2 ->> OutputProcessor :
+  OutputProcessor -->> S3 :
+  deactivate OutputProcessor
+  S3 -->> GasPump2 :
+  deactivate S3
+  GasPump2 -->> User :
+  deactivate GasPump2
+
+  User ->> GasPump2 : startPump()
+  activate GasPump2
+  GasPump2 ->> MdaEfsm : startPump()
+  activate MdaEfsm
+  MdaEfsm ->> S5 : startPump()
+  activate S5
+  S5 ->> OutputProcessor : resetCounter()
+  activate OutputProcessor
+  OutputProcessor ->> DataStore2 : gallonCount = 0
+  activate DataStore2
+  note over DataStore2 : gallonCount = 0
+  DataStore2 -->> OutputProcessor :
+  deactivate DataStore2
+  OutputProcessor -->> S5 :
+  deactivate OutputProcessor
+  S5 -->> MdaEfsm :
+  deactivate S5
+  MdaEfsm -->> GasPump2 :
+  deactivate MdaEfsm
+  GasPump2 -->> User :
+  deactivate GasPump2
+
+  User ->> GasPump2 : pumpGallon()
+  activate GasPump2
+  GasPump2 ->> MdaEfsm : pump()
+  activate MdaEfsm
+  MdaEfsm ->> S5 : pump()
+  activate S5
+  S5 ->> OutputProcessor : pumpGasUnit()
+  activate OutputProcessor
+  OutputProcessor ->> DataStore2 : gallonCount += 1
+  activate DataStore2
+  note over DataStore2 : gallonCount = 1
+  DataStore2 -->> OutputProcessor :
+  OutputProcessor ->> StorePrices2 : get price
+  activate StorePrices2
+  StorePrices2 ->> DataStore2 : get price
+  DataStore2 -->> StorePrices2 : 4
+  StorePrices2 -->> OutputProcessor : 4
+  deactivate StorePrices2
+  OutputProcessor ->> DataStore2 : total += 4
+  note over DataStore2 : total = 4
+  DataStore2 -->> OutputProcessor :
+  deactivate DataStore2
+  OutputProcessor ->> GasPumpFactory2 : get gas pumped
+  activate GasPumpFactory2
+  deactivate GasPumpFactory2
+  GasPumpFactory2 -->> OutputProcessor :
+  OutputProcessor ->> GasPumpedMsg2 : gasPumpedMsg()
+  activate GasPumpedMsg2
+  deactivate GasPumpedMsg2
+  GasPumpedMsg2 -->> OutputProcessor :
+  OutputProcessor -->> S5 :
+  deactivate OutputProcessor
+  S5 -->> MdaEfsm :
+  deactivate S5
+  MdaEfsm -->> GasPump2 :
+  deactivate MdaEfsm
+  GasPump2 -->> User :
+  deactivate GasPump2
+
+  User ->> GasPump2 : fullTank()
+  activate GasPump2
+  GasPump2 ->> MdaEfsm : stopPump()
+  activate MdaEfsm
+  MdaEfsm ->> S5 : stopPump()
+  activate S5
+  S5 ->> OutputProcessor : stopPump()
+  activate OutputProcessor
+  OutputProcessor ->> GasPumpFactory2 : get print receipt
+  activate GasPumpFactory2
+  deactivate GasPumpFactory2
+  GasPumpFactory2 -->> OutputProcessor :
+  OutputProcessor ->> PrintReceiptMsg2 : printReceiptMsg()
+  activate PrintReceiptMsg2
+  deactivate PrintReceiptMsg2
+  PrintReceiptMsg2 -->> OutputProcessor :
+  OutputProcessor -->> S5 :
+  deactivate OutputProcessor
+  S5 -->> MdaEfsm :
+  deactivate S5
+  MdaEfsm -->> GasPump2 :
+  deactivate MdaEfsm
+  GasPump2 -->> User :
+  deactivate GasPump2

@@ -1,0 +1,27 @@
+---
+config:
+  flowchart:
+    defaultRenderer: "elk"
+---
+flowchart TB
+  Start(Start) -- activate(a) / storePrices() --> S0
+
+  S0 -- start() / payMsg(); initializeData(); setCash(true) --> S1
+
+  S1 -- payCredit() --> S2
+  S1 -- payCash() / storeCash(); displayMenu(); setCash(true) --> S3
+  S1 -- payDebit() / enterPinMsg(); storePin(); k = 0 --> S8
+
+  S2 -- reject() / rejectMsg(); ejectCard() --> S0
+  S2 -- approved() / displayMenu(); ejectCard() --> S3
+
+  S3 -- cancel() / cancelMsg(); returnCash() --> S0
+  S3 -- selectGas(g) / setPrice(g) --> S3
+  S3 -- startPump() / setInitialValues() --> S5
+
+  S5 -- stopPump() / printReceipt() --> S0
+  S5 -- pump() / pumpGasUnit(); gasPumpedMsg() --> S5
+
+  S8 -- incorrectPin(max)[k > max] / wrongPinMsg(); ejectCard() --> S0
+  S8 -- correctPin() / displayMenu(); ejectCard() --> S3
+  S8 -- incorrectPin(max)[k <= max] / wrongPinMsg(); k += 1 --> S8

@@ -1,0 +1,61 @@
+classDiagram
+  direction LR
+  class State {
+    +getStateId(): int
+    +activate()
+    +start()
+    +payCash()
+    +payCredit()
+    +approved()
+    +reject()
+    +cancel()
+    +payDebit()
+    +correctPin()
+    +incorrectPin(int)
+    +selectGas(int)
+    +startPump()
+    +pump()
+    +stopPump()
+  }
+  class Start {
+    +activate()
+  }
+  class S0 {
+    +start()
+  }
+  class S1 {
+    +payCash()
+    +payCredit()
+    +payDebit()
+  }
+  class S2 {
+    +approved()
+    +reject()
+  }
+  class S3 {
+    +cancel()
+    +selectGas(int)
+    +startPump()
+  }
+  class S5 {
+    +pump()
+    +stopPump()
+  }
+  class S8 {
+    +correctPin()
+    +incorrectPin(int)
+  }
+  State <|-- Start
+  State <|-- S0
+  State <|-- S1
+  State <|-- S2
+  State <|-- S3
+  State <|-- S5
+  State <|-- S8
+
+  class MdaEfsm {
+    -states : State[]
+    -currentState : State
+    +changeState(int)
+  }
+  MdaEfsm -- State

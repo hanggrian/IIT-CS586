@@ -1,0 +1,13 @@
+[versions]
+java-compile = "21"
+java-support = "8"
+checkstyle = "10.25.0"
+
+[plugins]
+shadow = "com.gradleup.shadow:8.3.9"
+
+[libraries]
+# lint
+rulebook-checkstyle = "com.hanggrian.rulebook:rulebook-checkstyle:0.1"
+# main
+chalk = "com.github.tomas-langer:chalk:1.0.2"
