@@ -1,4 +1,4 @@
-# [Homework 3](https://github.com/hanggrian/IIT-CS586/blob/assets/assignments/hw3.pdf)
+# [Homework 3](https://github.com/hanggrian/IIT-CS586/blob/assets/assignments/hw3_1.pdf)
 
 ## Problem 1
 
@@ -36,22 +36,18 @@
 In addition to existing filters, four new filters are introduced to satisfy the
 requirements:
 
-- Filter 6: Provides mapping of student names and grades to IDs.
-- Filter 7: Reads student names with IDs.
-- Filter 8: Provides mapping of student names to grades in descending order.
-- Filter 9: Reports grade statistics.
+- Filter 6: Merge student's test scores with their names and IDs.
+- Filter 7: Sort test scores in ascending order.
 
 ```mermaid
 classDiagram
   direction LR
-  Filter1 -- Filter3 : <b>A</b><br>answers
-  Filter2 -- Filter3 : <b>CA</b><br>correct<br>answers
-  Filter3 -- Filter5 : <b>G</b><br>grades
-  Filter3 -- Filter6 : <b>SGI</b><br>student grades<br>with IDs
-  Filter5 -- Filter9 : <b>GS</b><br>grade<br>statistics
-  Filter6 -- Filter8 : <b>SNG</b><br>student names<br>to grades
-  Filter7 -- Filter6 : <b>SNI</b><br>student names<br>with IDs
-  Filter8 -- Filter4 : <b>SNGD</b><br>student names<br>to grades<br>(descending)
+  Filter1 --> Filter4 : <b>SA/ID</b><br>student answers /<br>student ID
+  Filter2 --> Filter4 : <b>CA</b><br>correct answers
+  Filter4 --> Filter6 : <b>SC/ID</b><br>student scores /<br>student ID
+  Filter3 --> Filter6 : <b>SN/ID</b><br>student names /<br>student ID
+  Filter6 --> Filter7 : <b>SSN</b><br>student scores<br>and names
+  Filter7 --> Filter5 : <b>SSG</b><br>sorted<br>student grades
 ```
 
 ### Part B
@@ -76,152 +72,262 @@ classDiagram
 ```mermaid
 classDiagram
   direction LR
-  Filter1 -- Filter3
-  Filter2 -- Filter3
-  Filter3 -- Filter5
-  Filter3 -- Filter6
-  Filter5 -- Filter9
-  Filter6 -- Filter8
-  Filter7 -- Filter6
-  Filter8 -- Filter4
-
   class Filter1 {
-    -A : A[]
-    -filter3 : Filter3
-    +readAnswers() void
+    -b : pipe-SA/ID
+    -SA/ID
+    +process()
   }
+  class Filter1Pipe["pipe-SA/ID"] {
+    -BufferList[]
+    -SA/ID
+    +write(SA/ID)
+    +read() SA/ID
+  }
+  Filter1 -- Filter1Pipe
+  note for Filter1 "Active"
+
   class Filter2 {
-    -CA : A[]
-    -filter3 : Filter3
-    +readCorrectAnswers() void
+    -CA
+    +readCA()
   }
-  class Filter3 {
-    -ca : A
-    -filter5 : Filter5
-    -filter6 : Filter6
-    +writeCorrectAnswer(A) void
-    +calculateGrades(A[]) void
+  class Filter2Pipe["pipe-CA"] {
+    -CA
+    -p : Filter2
+    +read() CA
   }
+  Filter2 -- Filter2Pipe
+  note for Filter2 "Pull-out"
+
   class Filter4 {
-    +printGrades(SNGD[]) void
+    -p1 : pipe-SA/ID
+    -p2 : pipe-CA
+    -CA
+    -SA/ID
+    -SC/ID
+    +computeSC/ID()
   }
-  class Filter5 {
-    -filter9 : Filter9
-    +calculateGradeStatistics(G[]) void
+  class Filter4Pipe["pipe-SC/ID"] {
+    -p : Filter4
+    -SC/ID
+    +readSC/ID()
   }
+  Filter1Pipe -- Filter4
+  Filter2Pipe -- Filter4
+  Filter4 -- Filter4Pipe
+  note for Filter4 "Pull-out"
+
+  class Filter3 {
+    -p : pipe-SN/ID
+    -SN/ID
+    +writeSN/ID(SN/ID)
+  }
+  class Filter3Pipe["pipe-SN/ID"] {
+    -SN/ID
+    +write(SN/ID)
+    +read() SN/ID
+  }
+  Filter3 -- Filter3Pipe
+  note for Filter3 "Push"
+
   class Filter6 {
-    -sni: SNI[]
-    -filter8 : Filter8
-    +writeStudents(SGI[]) void
-    +mapNamesToGrades(SGI[]) void
+    -p1 : pipe-SC/ID
+    -p2 : pipe-SN/ID
+    -SC/ID
+    -SN/ID
+    -SSN
+    +mergeSSN()
   }
+  class Filter6Pipe["pipe-SSN"] {
+    -p : Filter6
+    -SSN
+    +read() SSN
+  }
+  Filter4Pipe -- Filter6
+  Filter3Pipe -- Filter6
+  Filter6 -- Filter6Pipe
+  note for Filter6 "Pull-out"
+
   class Filter7 {
-    -filter6 : Filter6
-    +readStudentNames() void
+    -p : pipe-SSN
+    -SSN
+    -SSG
+    +sortSSG()
   }
-  class Filter8 {
-    -filter4 : Filter4
-    +sortGradesDescending(SNG[]) void
+  class Filter7Pipe["pipe-SSG"] {
+    -p1 : Filter5
+    -p2 : Filter7
+    -SSG
+    +read() SSG
   }
-  class Filter9 {
-    +reportGradeStatistics(GS[]) void
+  Filter6Pipe -- Filter7
+  Filter7 -- Filter7Pipe
+  note for Filter7 "Pull-out"
+
+  class Filter5 {
+    -SSG
+    +reportSSG()
+    +writeSSG(SSG)
   }
+  Filter7Pipe -- Filter5
+  note for Filter5 "Push"
 ```
 
 ### Pseudo-code
 
 ```vb
 class Filter1 {
-  A[] A
-  Filter3 filter3
+  pipe-SA/ID b
+  SA/ID
 
-  void readAnswers() {
-    A <- 'get list of answers'
-    filter3.calculateGrades(A)
+  void process() {
+    WHILE NOT end_of_input DO
+      SA/ID <- read_student_answers()
+      b.write(SA/ID)
+    END WHILE
   }
 }
 
 class Filter2 {
-  CA[] CA
-  Filter3 filter3
+  CA
 
-  void readCorrectAnswers() {
-    CA <- 'get list of correct answers'
-    filter3.writeCorrectAnswers(CA)
+  CA readCA() {
+    CA <- read_correct_answers()
+    RETURN CA
   }
 }
 
 class Filter3 {
-  CA ca
-  Filter5 filter5
-  Filter6 filter6
+  pipe-SN/ID p
+  SN/ID
 
-  void writeCorrectAnswer(CA correctAnswer) {
-    ca <- correctAnswer
-  }
-
-  void calculateGrades(A[] answers) {
-    SGI <- 'calculate grades based on ca and answers'
-    G <- SGI.getGrades()
-    filter6.writeStudents(SGI)
-    filter5.calculateGradeStatistics(G)
+  void writeSN/ID(SN/ID) {
+    p.write(SN/ID)
   }
 }
 
 class Filter4 {
-  void printGrades(SNGD[] studentNamesToGradesDescending) {
-    FOR sngd IN SNGD DO
-      'print sorted grade'
-    END FOR
+  pipe-SA/ID p1
+  pipe-CA p2
+  CA
+  SA/ID
+  SC/ID
+
+  void computeSC/ID() {
+    WHILE NOT end_of_input DO
+      SA/ID <- p1.read()
+      CA <- p2.read()
+      SC/ID <- compute_scores(SA/ID, CA)
+    END WHILE
   }
 }
 
 class Filter5 {
-  Filter9 filter9
+  SSG
 
-  void calculateGradeStatistics(G[] grades) {
-    GS <- 'calculate grade statistics from grades'
-    filter9.reportGradeStatistics(GS)
+  void reportSSG() {
+    WHILE NOT end_of_input DO
+      SSG <- read_SSG()
+      print(SSG)
+    END WHILE
+  }
+
+  void writeSSG(SSG) {
+    'write SSG to output'
   }
 }
 
 class Filter6 {
-  SNI[] sni
-  Filter8 filter8
+  pipe-SC/ID p1
+  pipe-SN/ID p2
+  SC/ID
+  SN/ID
+  SSN
 
-  void writeStudents(SNI[] studentGradesWithIDs) {
-    sni <- studentGradesWithIDs
-  }
-
-  void mapNamesToGrades(SGI[] SGI) {
-    SNG <- 'map student names to grades using sni and SGI'
-    filter8.sortGradesDescending(SNG)
+  void mergeSSN() {
+    WHILE NOT end_of_input DO
+      SC/ID <- p1.read()
+      SN/ID <- p2.read()
+      SSN <- merge(SC/ID, SN/ID)
+    END WHILE
   }
 }
 
 class Filter7 {
-  Filter6 filter6
+  pipe-SSN p
+  SSN
+  SSG
 
-  void readStudentNames() {
-    SNI <- 'get list of student names with IDs'
-    filter6.writeStudents(SNI)
+  void sortSSG() {
+    SSN <- p.read()
+    SSG <- sort(SSN)
   }
 }
 
-class Filter8 {
-  Filter4 filter4
+class pipe-SA/ID {
+  BufferList[]
+  SA/ID
 
-  void sortGradesDescending(SNG[] SNG) {
-    SNGD <- 'sort SNG in descending order'
-    filter4.printGrades(SNGD)
+  void write(SA/ID) {
+    BufferList.add(SA/ID)
+  }
+
+  SA/ID read() {
+    SA/ID <- BufferList.removeFirst()
+    RETURN SA/ID
   }
 }
 
-class Filter9 {
-  void reportGradeStatistics(GS[] GS) {
-    FOR gs IN GS DO
-      'print grade statistic'
-    END FOR
+class pipe-CA {
+  CA
+  Filter2 p
+
+  CA read() {
+    CA <- p.readCA()
+    RETURN CA
+  }
+}
+
+class pipe-SC/ID {
+  Filter4 p
+  SC/ID
+
+  SC/ID readSC/ID() {
+    SC/ID <- p.computeSC/ID()
+    RETURN SC/ID
+  }
+}
+
+class pipe-SN/ID {
+  SN/ID
+
+  void write(SN/ID) {
+    SN/ID <- SN/ID
+  }
+
+  SN/ID read() {
+    RETURN SN/ID
+  }
+}
+
+class pipe-SSN {
+  Filter6 p
+  SSN
+
+  SSN read() {
+    SSN <- p.mergeSSN()
+    RETURN SSN
+  }
+}
+
+class pipe-SSG {
+  Filter5 p1
+  Filter7 p2
+  SSG
+
+  SSG read() {
+    SSG <- p2.sortSSG()
+    p1.writeSSG(SSG)
+    RETURN SSG
   }
 }
 ```
