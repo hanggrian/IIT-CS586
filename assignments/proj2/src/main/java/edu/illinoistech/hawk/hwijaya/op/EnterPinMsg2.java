@@ -1,11 +1,14 @@
 package edu.illinoistech.hawk.hwijaya.op;
 
+import static com.github.tomaslanger.chalk.Chalk.on;
+import static java.lang.System.out;
+
 /**
  * Implementation of the EnterPinMsg operation for GasPump2.
  */
 public class EnterPinMsg2 implements EnterPinMsg {
     @Override
     public void enterPinMsg() {
-        System.out.print("Debit card PIN established.");
+        out.print(on("Debit card PIN established.").green());
     }
 }

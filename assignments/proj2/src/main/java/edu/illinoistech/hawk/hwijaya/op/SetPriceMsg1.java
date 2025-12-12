@@ -3,6 +3,9 @@ package edu.illinoistech.hawk.hwijaya.op;
 import edu.illinoistech.hawk.hwijaya.ds.DataStore;
 import edu.illinoistech.hawk.hwijaya.ds.DataStore1;
 
+import static com.github.tomaslanger.chalk.Chalk.on;
+import static java.lang.System.out;
+
 /**
  * Implementation of the SetPriceMsg operation for GasPump1.
  */
@@ -19,10 +22,12 @@ public class SetPriceMsg1 implements SetPriceMsg {
         if (gasType != 1) {
             return;
         }
-        System.out.println(
-            "Regular gas: $"
-                + dataStore1.price
-                + "/liter"
+        out.println(
+            on(
+                "Regular gas: $"
+                    + dataStore1.price
+                    + "/liter"
+            ).green()
         );
     }
 }

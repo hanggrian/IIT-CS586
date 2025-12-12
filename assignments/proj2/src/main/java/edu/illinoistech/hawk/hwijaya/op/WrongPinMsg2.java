@@ -3,6 +3,9 @@ package edu.illinoistech.hawk.hwijaya.op;
 import edu.illinoistech.hawk.hwijaya.ds.DataStore;
 import edu.illinoistech.hawk.hwijaya.ds.DataStore2;
 
+import static com.github.tomaslanger.chalk.Chalk.on;
+import static java.lang.System.out;
+
 /**
  * Implementation of the WrongPinMsg operation for GasPump2.
  */
@@ -16,6 +19,6 @@ public class WrongPinMsg2 implements WrongPinMsg {
 
     @Override
     public void wrongPinMsg() {
-        System.out.println("Wrong pin, try again...");
+        out.println(on("Wrong pin, try again...").red());
     }
 }

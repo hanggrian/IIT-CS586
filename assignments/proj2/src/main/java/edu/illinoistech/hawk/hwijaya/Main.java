@@ -8,204 +8,199 @@ import edu.illinoistech.hawk.hwijaya.gp.GasPump1;
 import edu.illinoistech.hawk.hwijaya.gp.GasPump2;
 import edu.illinoistech.hawk.hwijaya.op.OutputProcessor;
 import edu.illinoistech.hawk.hwijaya.s.MdaEfsm;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static com.github.tomaslanger.chalk.Chalk.on;
+import static edu.illinoistech.hawk.hwijaya.RegexChalk.onAll;
+import static java.lang.System.out;
 
 /**
  * The driver class for the gas pump system, providing a console-based interface
- * to interact with GasPump1 and GasPump2.
+ * to interact with GasPump1 and GasPump2. Uses loop stack to progress.
  */
 public class Main {
-    public static final String OPTION1 = "1";
-    public static final String OPTION2 = "2";
-    public static final String OPTION3 = "3";
-    public static final String OPTION4 = "4";
-    public static final String OPTION5 = "5";
-    public static final String OPTION6 = "6";
-    public static final String OPTION7 = "7";
-    public static final String OPTION8 = "8";
-    public static final String OPTION9 = "9";
-    public static final String OPTION10 = "10";
-    public static final String OPTION11 = "11";
-    public static final String OPTION12 = "12";
-    public static final String OPTION13 = "13";
-    public static final String OPTION14 = "14";
-    public static final String OPTION_QUIT = "q";
+    private static final RestrictedReader READER = new RestrictedReader();
+    private static final String INDEX_REGEX = "([0-9]+\\.|q+\\.)";
+    private static final String PAREN_REGEX = "\\((.*?)\\)";
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Main main = new Main();
         while (true) {
-            print("Welcome to Gas Pump", "GasPump1", "GasPump2");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            switch (reader.readLine()) {
-                case OPTION1:
-                    main.runGasPump1(reader);
+            out.println();
+            out.print(on("Welcome to Gas Pump!").inverse());
+            out.print(
+                onAll(
+                    "\n"
+                        + "1. GasPump1  q. quit\n"
+                        + "2. GasPump2\n"
+                ).regex(INDEX_REGEX, Chalk::bold)
+            );
+            out.println(on("Which pump:").yellow());
+            switch (READER.readText(restrictUntil(2))) {
+                case "1":
+                    main.runGasPump1();
                     break;
-                case OPTION2:
-                    main.runGasPump2(reader);
+                case "2":
+                    main.runGasPump2();
                     break;
-                case OPTION_QUIT:
-                    System.out.println("Goodbye!");
+                case "quit":
+                case "q":
+                    out.println();
+                    out.println("Goodbye!");
                     System.exit(0);
             }
         }
     }
 
-    public void runGasPump1(BufferedReader reader) throws IOException {
-        AbstractFactory abstractFactory = new GasPumpFactory1();
-        GasPump1 gasPump1 =
+    public void runGasPump1() {
+        AbstractFactory factory = new GasPumpFactory1();
+        GasPump1 pump =
             new GasPump1(
-                new MdaEfsm(new OutputProcessor(abstractFactory)),
-                abstractFactory
+                new MdaEfsm(new OutputProcessor(factory)),
+                factory
             );
         loop:
         while (true) {
-            print(
-                "GasPump1 menu",
-                "activate(float)",
-                "start()",
-                "payCash(float)",
-                "payCredit()",
-                "approved()",
-                "reject()",
-                "cancel()",
-                "startPump()",
-                "pumpLiter()",
-                "stopPump()"
+            out.println();
+            out.print(on("GasPump 1:").inverse());
+            out.print(
+                onAll(
+                    "\n"
+                        + "1. activate(float)  4. payCredit()  7. cancel()     10. stopPump()\n"
+                        + "2. start()          5. approved()   8. startPump()   q. quit\n"
+                        + "3. payCash(float)   6. reject()     9. pumpLiter()\n"
+                ).regex(INDEX_REGEX, Chalk::bold)
+                    .regex(PAREN_REGEX, Chalk::gray)
             );
-            switch (reader.readLine()) {
-                case OPTION1:
-                    System.out.println(Chalk.on("Set regular gas price:").underline());
-                    gasPump1.activate(Float.parseFloat(reader.readLine()));
+            out.println(on("Select menu:").yellow());
+            switch (READER.readText(restrictUntil(10))) {
+                case "1":
+                    out.println(on("Set regular gas price:").yellow());
+                    pump.activate(READER.readDecimal(1, 50));
                     break;
-                case OPTION2:
-                    gasPump1.start();
+                case "2":
+                    pump.start();
                     break;
-                case OPTION3:
-                    System.out.println(Chalk.on("Set cash value:").underline());
-                    gasPump1.payCash(Integer.parseInt(reader.readLine()));
+                case "3":
+                    out.println(on("Set cash value:").yellow());
+                    pump.payCash(READER.readNumber(0, Integer.MAX_VALUE));
                     break;
-                case OPTION4:
-                    gasPump1.payCredit();
+                case "4":
+                    pump.payCredit();
                     break;
-                case OPTION5:
-                    gasPump1.approved();
+                case "5":
+                    pump.approved();
                     break;
-                case OPTION6:
-                    gasPump1.reject();
+                case "6":
+                    pump.reject();
                     break;
-                case OPTION7:
-                    gasPump1.cancel();
+                case "7":
+                    pump.cancel();
                     break;
-                case OPTION8:
-                    gasPump1.startPump();
+                case "8":
+                    pump.startPump();
                     break;
-                case OPTION9:
-                    gasPump1.pumpLiter();
+                case "9":
+                    pump.pumpLiter();
                     break;
-                case OPTION10:
-                    gasPump1.stopPump();
+                case "10":
+                    pump.stopPump();
                     break;
-                case OPTION_QUIT:
-                    System.out.println("Exiting GasPump1.");
+                case "quit":
+                case "q":
                     break loop;
             }
         }
     }
 
-    public void runGasPump2(BufferedReader reader) throws IOException {
-        AbstractFactory abstractFactory = new GasPumpFactory2();
-        GasPump2 gasPump2 =
+    public void runGasPump2() {
+        AbstractFactory factory = new GasPumpFactory2();
+        GasPump2 pump =
             new GasPump2(
-                new MdaEfsm(new OutputProcessor(abstractFactory)),
-                abstractFactory
+                new MdaEfsm(new OutputProcessor(factory)),
+                factory
             );
         loop:
         while (true) {
-            print(
-                "GasPump2 menu",
-                "activate(int, int)",
-                "start()",
-                "payDebit(int)",
-                "pin(int)",
-                "payCredit()",
-                "approved()",
-                "reject()",
-                "cancel()",
-                "regular()",
-                "diesel()",
-                "startPump()",
-                "pumpGallon()",
-                "stopPump()",
-                "fullTank()"
+            out.println();
+            out.print(on("GasPump 2:").inverse());
+            out.print(
+                onAll(
+                    "\n"
+                        + "1. activate(int, int)  5. payCredit()   9. cancel()     13. stopPump()\n"
+                        + "2. start()             6. approved()   10. startPump()  14. fullTank()\n"
+                        + "3. payDebit(int)       7. reject()     11. pumpLiter()   q. quit\n"
+                        + "4. pin(int)            8. cancel()     12. pumpLiter()\n"
+                ).regex(INDEX_REGEX, Chalk::bold)
+                    .regex(PAREN_REGEX, Chalk::gray)
             );
-            switch (reader.readLine()) {
-                case OPTION1:
-                    System.out.println(Chalk.on("Set regular gas price:").underline());
-                    int regularGasPrice = Integer.parseInt(reader.readLine());
-                    System.out.println(Chalk.on("Set diesel gas price:").underline());
-                    int dieselGasPrice = Integer.parseInt(reader.readLine());
-                    gasPump2.activate(regularGasPrice, dieselGasPrice);
+            out.println(on("Select menu:").yellow());
+            switch (READER.readText(restrictUntil(14))) {
+                case "1":
+                    out.println(on("Set regular gas price:").yellow());
+                    int regularGasPrice = READER.readNumber(1, 50);
+                    out.println(on("Set diesel gas price:").yellow());
+                    int dieselGasPrice = READER.readNumber(1, 50);
+                    pump.activate(regularGasPrice, dieselGasPrice);
                     break;
-                case OPTION2:
-                    gasPump2.start();
+                case "2":
+                    pump.start();
                     break;
-                case OPTION3:
-                    System.out.println(Chalk.on("Enter pin:").underline());
-                    gasPump2.payDebit(Integer.parseInt(reader.readLine()));
+                case "3":
+                    out.println(on("Enter pin:").yellow());
+                    pump.payDebit(READER.readNumber(0, 999999));
                     break;
-                case OPTION4:
-                    System.out.println(Chalk.on("Enter p:").underline());
-                    gasPump2.pin(Integer.parseInt(reader.readLine()));
+                case "4":
+                    out.println(on("Enter p:").yellow());
+                    pump.pin(READER.readNumber(0, 999999));
                     break;
-                case OPTION5:
-                    gasPump2.payCredit();
+                case "5":
+                    pump.payCredit();
                     break;
-                case OPTION6:
-                    gasPump2.approved();
+                case "6":
+                    pump.approved();
                     break;
-                case OPTION7:
-                    gasPump2.reject();
+                case "7":
+                    pump.reject();
                     break;
-                case OPTION8:
-                    gasPump2.cancel();
+                case "8":
+                    pump.cancel();
                     break;
-                case OPTION9:
-                    gasPump2.regular();
+                case "9":
+                    pump.regular();
                     break;
-                case OPTION10:
-                    gasPump2.diesel();
+                case "10":
+                    pump.diesel();
                     break;
-                case OPTION11:
-                    gasPump2.startPump();
+                case "11":
+                    pump.startPump();
                     break;
-                case OPTION12:
-                    gasPump2.pumpGallon();
+                case "12":
+                    pump.pumpGallon();
                     break;
-                case OPTION13:
-                    gasPump2.stopPump();
+                case "13":
+                    pump.stopPump();
                     break;
-                case OPTION14:
-                    gasPump2.fullTank();
+                case "14":
+                    pump.fullTank();
                     break;
-                case OPTION_QUIT:
-                    System.out.println("Exiting GasPump2.");
+                case "quit":
+                case "q":
                     break loop;
             }
         }
     }
 
-    private static void print(String title, String... actions) {
-        StringBuilder builder = new StringBuilder("\n" + Chalk.on(title).bold() + ":\n");
-        int i = 0;
-        for (String action : actions) {
-            builder
-                .append(Chalk.on(++i + (i < 10 ? ".  " : ". ") + action).bold())
-                .append('\n');
-        }
-        System.out.println(
-            builder.append(Chalk.on("q.  quit").bold())
-        );
+    private static String[] restrictUntil(int max) {
+        List<String> restriction =
+            IntStream
+                .rangeClosed(1, max)
+                .mapToObj(String::valueOf)
+                .collect(Collectors.toList());
+        restriction.add("quit");
+        restriction.add("q");
+        return restriction.toArray(new String[0]);
     }
 }

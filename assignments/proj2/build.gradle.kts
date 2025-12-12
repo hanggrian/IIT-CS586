@@ -22,12 +22,21 @@ checkstyle.toolVersion = libs.versions.checkstyle.get()
 dependencies {
     checkstyle(libs.rulebook.checkstyle)
 
+    implementation(libs.guava)
     implementation(libs.chalk)
+
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.bundles.junit5)
+
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 tasks {
     compileJava {
         options.release = javaSupportVersion.asInt()
+    }
+    test {
+        useJUnitPlatform()
     }
     shadowJar {
         archiveFileName.set("${rootProject.name}.jar")

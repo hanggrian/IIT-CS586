@@ -4,6 +4,9 @@ import edu.illinoistech.hawk.hwijaya.af.AbstractFactory;
 import edu.illinoistech.hawk.hwijaya.ds.DataStore2;
 import edu.illinoistech.hawk.hwijaya.s.MdaEfsm;
 
+import static com.github.tomaslanger.chalk.Chalk.on;
+import static java.lang.System.out;
+
 /**
  * GasPump2 class representing the operations of Gas Pump 2.
  */
@@ -18,7 +21,7 @@ public class GasPump2 {
 
     public void activate(int a, int b) {
         if (a <= 0 || b <= 0) {
-            System.out.println("PRICES NEED TO BE GREATER THAN 0");
+            out.println(on("Positive prices required.").red());
             return;
         }
         dataStore2.tempA = a;

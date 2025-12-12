@@ -1,10 +1,13 @@
 package edu.illinoistech.hawk.hwijaya.op;
 
+import static com.github.tomaslanger.chalk.Chalk.on;
+import static java.lang.System.out;
+
 /**
  * Interface for the RejectMsg operation in the OutputProcessor.
  */
 public interface RejectMsg {
-    default void rejectMsg(){
-        System.out.println("Credit card rejected.");
+    default void rejectMsg() {
+        out.println(on("Credit card rejected.").red());
     }
 }

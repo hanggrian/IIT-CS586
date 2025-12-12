@@ -3,6 +3,9 @@ package edu.illinoistech.hawk.hwijaya.op;
 import edu.illinoistech.hawk.hwijaya.ds.DataStore;
 import edu.illinoistech.hawk.hwijaya.ds.DataStore1;
 
+import static com.github.tomaslanger.chalk.Chalk.on;
+import static java.lang.System.out;
+
 /**
  * Implementation of the PumpGasUnit operation for GasPump1.
  */
@@ -16,7 +19,7 @@ public class PumpGasUnit1 implements PumpGasUnit {
 
     @Override
     public void pumpGasUnit() {
-        System.out.println("Pumping one liter...");
+        out.println(on("Pumping one liter...").green());
         int liter = dataStore1.literCount + 1;
         dataStore1.total = liter * dataStore1.price;
         dataStore1.literCount = liter;

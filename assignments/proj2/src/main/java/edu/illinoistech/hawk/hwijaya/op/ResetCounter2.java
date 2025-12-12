@@ -3,6 +3,9 @@ package edu.illinoistech.hawk.hwijaya.op;
 import edu.illinoistech.hawk.hwijaya.ds.DataStore;
 import edu.illinoistech.hawk.hwijaya.ds.DataStore2;
 
+import static com.github.tomaslanger.chalk.Chalk.on;
+import static java.lang.System.out;
+
 /**
  * Implementation of the ResetCounter operation for GasPump2.
  */
@@ -18,6 +21,6 @@ public class ResetCounter2 implements ResetCounter {
     public void resetCounter() {
         dataStore2.total = 0;
         dataStore2.gallonCount = 0;
-        System.out.println("Total and gallon count reset.");
+        out.println(on("Total and gallon count reset.").green());
     }
 }

@@ -4,6 +4,9 @@ import edu.illinoistech.hawk.hwijaya.af.AbstractFactory;
 import edu.illinoistech.hawk.hwijaya.ds.DataStore1;
 import edu.illinoistech.hawk.hwijaya.s.MdaEfsm;
 
+import static com.github.tomaslanger.chalk.Chalk.on;
+import static java.lang.System.out;
+
 /**
  * GasPump1 class representing the operations of Gas Pump 1.
  */
@@ -18,7 +21,7 @@ public class GasPump1 {
 
     public void activate(float a) {
         if (a <= 0.0) {
-            System.out.println("Non-positive price.");
+            out.println(on("Positive price required.").red());
             return;
         }
         dataStore1.tempA = a;

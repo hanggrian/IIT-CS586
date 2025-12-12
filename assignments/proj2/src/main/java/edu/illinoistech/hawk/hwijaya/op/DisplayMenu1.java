@@ -3,6 +3,9 @@ package edu.illinoistech.hawk.hwijaya.op;
 import edu.illinoistech.hawk.hwijaya.ds.DataStore;
 import edu.illinoistech.hawk.hwijaya.ds.DataStore1;
 
+import static com.github.tomaslanger.chalk.Chalk.on;
+import static java.lang.System.out;
+
 /**
  * Implementation of the DisplayMenu operation for GasPump1.
  */
@@ -16,6 +19,6 @@ public class DisplayMenu1 implements DisplayMenu {
 
     @Override
     public void displayMenu() {
-        System.out.println("Payment is approved, only regular is available.");
+        out.println(on("Payment is approved, only regular is available.").green());
     }
 }
