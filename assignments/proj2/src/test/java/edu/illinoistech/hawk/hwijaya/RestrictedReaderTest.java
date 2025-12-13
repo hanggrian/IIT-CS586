@@ -16,7 +16,7 @@ public class RestrictedReaderTest {
     @Mock private BufferedReader reader;
 
     @Test
-    public void matching() throws IOException {
+    public void inputMatched() throws IOException {
         when(reader.readLine()).thenReturn("bar");
         assertThat(new RestrictedReader(reader).readText(new String[]{"foo", "bar"}, true))
             .isEqualTo("bar");
@@ -31,7 +31,7 @@ public class RestrictedReaderTest {
     }
 
     @Test
-    public void restricted() throws IOException {
+    public void inputRestricted() throws IOException {
         when(reader.readLine()).thenReturn("baz");
         assertThat(new RestrictedReader(reader).readText(new String[]{"foo", "bar"}, true))
             .isNull();

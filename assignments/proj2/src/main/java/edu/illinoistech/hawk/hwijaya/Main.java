@@ -1,19 +1,16 @@
 package edu.illinoistech.hawk.hwijaya;
 
 import com.github.tomaslanger.chalk.Chalk;
-import edu.illinoistech.hawk.hwijaya.af.AbstractFactory;
-import edu.illinoistech.hawk.hwijaya.af.GasPumpFactory1;
-import edu.illinoistech.hawk.hwijaya.af.GasPumpFactory2;
-import edu.illinoistech.hawk.hwijaya.gp.GasPump1;
-import edu.illinoistech.hawk.hwijaya.gp.GasPump2;
-import edu.illinoistech.hawk.hwijaya.op.OutputProcessor;
-import edu.illinoistech.hawk.hwijaya.s.MdaEfsm;
+import edu.illinoistech.hawk.hwijaya.factory.AbstractFactory;
+import edu.illinoistech.hawk.hwijaya.factory.GasPumpFactory1;
+import edu.illinoistech.hawk.hwijaya.factory.GasPumpFactory2;
+import edu.illinoistech.hawk.hwijaya.output.OutputProcessor;
+import edu.illinoistech.hawk.hwijaya.state.MdaEfsm;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.github.tomaslanger.chalk.Chalk.on;
-import static edu.illinoistech.hawk.hwijaya.RegexChalk.onAll;
 import static java.lang.System.out;
 
 /**
@@ -31,13 +28,13 @@ public class Main {
             out.println();
             out.print(on("Welcome to Gas Pump!").inverse());
             out.print(
-                onAll(
+                new RegexChalk(
                     "\n"
                         + "1. GasPump1  q. quit\n"
                         + "2. GasPump2\n"
                 ).regex(INDEX_REGEX, Chalk::bold)
             );
-            out.println(on("Which pump:").yellow());
+            out.print(on("Which pump: ").yellow());
             switch (READER.readText(restrictUntil(2))) {
                 case "1":
                     main.runGasPump1();
@@ -66,25 +63,25 @@ public class Main {
             out.println();
             out.print(on("GasPump 1:").inverse());
             out.print(
-                onAll(
+                new RegexChalk(
                     "\n"
-                        + "1. activate(float)  4. payCredit()  7. cancel()     10. stopPump()\n"
-                        + "2. start()          5. approved()   8. startPump()   q. quit\n"
-                        + "3. payCash(float)   6. reject()     9. pumpLiter()\n"
+                        + "1. activate(float)  4. payCredit()  7. cancel()     10. pumpLiter()\n"
+                        + "2. start()          5. approved()   8. regular()    11. stopPump()\n"
+                        + "3. payCash(float)   6. reject()     9. startPump()   q. quit\n"
                 ).regex(INDEX_REGEX, Chalk::bold)
                     .regex(PAREN_REGEX, Chalk::gray)
             );
-            out.println(on("Select menu:").yellow());
-            switch (READER.readText(restrictUntil(10))) {
+            out.print(on("Select menu: ").yellow());
+            switch (READER.readText(restrictUntil(11))) {
                 case "1":
-                    out.println(on("Set regular gas price:").yellow());
+                    out.print(on("Set regular gas price: ").yellow());
                     pump.activate(READER.readDecimal(1, 50));
                     break;
                 case "2":
                     pump.start();
                     break;
                 case "3":
-                    out.println(on("Set cash value:").yellow());
+                    out.print(on("Set cash value: ").yellow());
                     pump.payCash(READER.readNumber(0, Integer.MAX_VALUE));
                     break;
                 case "4":
@@ -100,12 +97,15 @@ public class Main {
                     pump.cancel();
                     break;
                 case "8":
-                    pump.startPump();
+                    pump.regular();
                     break;
                 case "9":
-                    pump.pumpLiter();
+                    pump.startPump();
                     break;
                 case "10":
+                    pump.pumpLiter();
+                    break;
+                case "11":
                     pump.stopPump();
                     break;
                 case "quit":
@@ -127,21 +127,21 @@ public class Main {
             out.println();
             out.print(on("GasPump 2:").inverse());
             out.print(
-                onAll(
+                new RegexChalk(
                     "\n"
-                        + "1. activate(int, int)  5. payCredit()   9. cancel()     13. stopPump()\n"
-                        + "2. start()             6. approved()   10. startPump()  14. fullTank()\n"
-                        + "3. payDebit(int)       7. reject()     11. pumpLiter()   q. quit\n"
-                        + "4. pin(int)            8. cancel()     12. pumpLiter()\n"
+                        + "1. activate(int, int)  5. payCredit()   9. regular()     13. stopPump()\n"
+                        + "2. start()             6. approved()   10. diesel()      14. fullTank()\n"
+                        + "3. payDebit(int)       7. reject()     11. startPump()    q. quit\n"
+                        + "4. pin(int)            8. cancel()     12. pumpGallon()\n"
                 ).regex(INDEX_REGEX, Chalk::bold)
                     .regex(PAREN_REGEX, Chalk::gray)
             );
-            out.println(on("Select menu:").yellow());
-            switch (READER.readText(restrictUntil(14))) {
+            out.print(on("Select menu: ").yellow());
+            switch (READER.readText(restrictUntil(15))) {
                 case "1":
-                    out.println(on("Set regular gas price:").yellow());
+                    out.print(on("Set regular gas price: ").yellow());
                     int regularGasPrice = READER.readNumber(1, 50);
-                    out.println(on("Set diesel gas price:").yellow());
+                    out.print(on("Set diesel gas price: ").yellow());
                     int dieselGasPrice = READER.readNumber(1, 50);
                     pump.activate(regularGasPrice, dieselGasPrice);
                     break;
@@ -149,11 +149,11 @@ public class Main {
                     pump.start();
                     break;
                 case "3":
-                    out.println(on("Enter pin:").yellow());
+                    out.print(on("Enter pin: ").yellow());
                     pump.payDebit(READER.readNumber(0, 999999));
                     break;
                 case "4":
-                    out.println(on("Enter p:").yellow());
+                    out.print(on("Enter p: ").yellow());
                     pump.pin(READER.readNumber(0, 999999));
                     break;
                 case "5":

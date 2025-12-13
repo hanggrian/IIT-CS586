@@ -61,9 +61,9 @@ public final class RestrictedReader {
             if (strings.contains(text)) {
                 return text;
             }
-            out.println(on("Unknown input, try again...").yellow());
+            out.print(on("Unknown input, try again... ").yellow());
         } catch (IOException e) {
-            out.println(on(e.getMessage()).red());
+            out.print(on(e.getMessage()).red());
         }
         return isTest ? null : readText(restriction, false);
     }
@@ -93,7 +93,7 @@ public final class RestrictedReader {
             if (number >= low && number <= high) {
                 return number;
             }
-            out.println(on("Out of range, try again...").yellow());
+            out.print(on("Out of range, try again... ").yellow());
         } catch (IOException | NumberFormatException e) {
             out.println(on(e.getMessage()).red());
         }
@@ -125,7 +125,7 @@ public final class RestrictedReader {
             if (decimal >= low && decimal <= high) {
                 return decimal;
             }
-            out.println(on("Out of range, try again...").yellow());
+            out.print(on("Out of range, try again... ").yellow());
         } catch (IOException | NumberFormatException e) {
             out.println(on(e.getMessage()).red());
         }
